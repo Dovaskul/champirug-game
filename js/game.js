@@ -71,23 +71,45 @@ class ChampignonGame {
     }
     
     bindEvents() {
-        // Teclado
+        // Teclado con eventos de keydown y keyup para salto variable
         document.addEventListener('keydown', (e) => {
             if (e.code === 'Space') {
                 e.preventDefault();
-                this.handleAction();
+                if (!this.gameRunning && this.gameOver.style.display === 'none') {
+                    this.startGame();
+                } else if (this.gameRunning && !this.isJumping) {
+                    this.jump(); // Iniciar salto variable
+                } else if (!this.gameRunning) {
+                    this.resetGame();
+                }
             }
         });
         
-        // Click/Touch
-        this.gameContainer.addEventListener('click', () => {
-            this.handleAction();
+        document.addEventListener('keyup', (e) => {
+            if (e.code === 'Space' && this.isJumping && this.gameRunning) {
+                e.preventDefault();
+                this.executeJump(); // Ejecutar salto con la potencia acumulada
+            }
+        });
+        
+        // Click/Touch con eventos de inicio y fin
+        this.gameContainer.addEventListener('mousedown', (e) => {
+            this.handleMouseDown();
+        });
+        
+        this.gameContainer.addEventListener('mouseup', (e) => {
+            this.handleMouseUp();
         });
         
         // Touch events para móviles
         this.gameContainer.addEventListener('touchstart', (e) => {
             e.preventDefault();
-            this.handleAction();
+            this.handleMouseDown();
+        });
+        
+        this.gameContainer.addEventListener('touchend', (e) => {
+            e.preventDefault();  
+            this.handleMouseUp();
         });
         
         // Visibilidad de la página
@@ -96,6 +118,22 @@ class ChampignonGame {
                 this.pauseGame();
             }
         });
+    }
+    
+    handleMouseDown() {
+        if (!this.gameRunning && this.gameOver.style.display === 'none') {
+            this.startGame();
+        } else if (this.gameRunning && !this.isJumping) {  
+            this.jump();
+        } else if (!this.gameRunning) {
+            this.resetGame();
+        }
+    }
+    
+    handleMouseUp() {
+        if (this.isJumping && this.gameRunning) {
+            this.executeJump();
+        }
     }
     
     handleAction() {
@@ -126,21 +164,51 @@ class ChampignonGame {
             this.score += 1000;
             this.updateUI();
             
-            // Aumentar dificultad cada 30 segundos
-            if (this.time % 30 === 0) {
-                this.difficulty += 0.2;
-                this.gameSpeed += 0.1;
+            // Aumentar dificultad más agresivamente cada 15 segundos
+            if (this.time % 15 === 0) {
+                this.difficulty += 0.3;
+                this.gameSpeed += 0.15;
                 console.log(`🔥 Dificultad aumentada: ${this.difficulty.toFixed(1)}`);
+                
+                // Añadir ráfaga de enemigos cuando sube la dificultad
+                for (let i = 0; i < 3; i++) {
+                    setTimeout(() => this.spawnEnemy(), i * 500);
+                }
+            }
+            
+            // Spawn adicional de enemigos cada 5 segundos para mantener presión constante
+            if (this.time % 5 === 0) {
+                this.spawnEnemy();
+                if (this.difficulty > 2) {
+                    setTimeout(() => this.spawnEnemy(), 1000);
+                }
             }
         }, 1000);
         
+        // Spawn mucho más frecuente de enemigos (mucho más difícil)
         this.enemyTimer = setInterval(() => {
             this.spawnEnemy();
-        }, this.getRandomInterval(5000, 10000) / this.difficulty);
+            // Spawn adicional de enemigos para mayor dificultad
+            if (Math.random() < 0.4 + (this.difficulty * 0.1)) {
+                setTimeout(() => this.spawnEnemy(), this.getRandomInterval(800, 1500));
+            }
+            // Spawn de grupos de enemigos ocasionalmente
+            if (Math.random() < 0.2 + (this.difficulty * 0.05)) {
+                setTimeout(() => this.spawnEnemy(), this.getRandomInterval(400, 800));
+                setTimeout(() => this.spawnEnemy(), this.getRandomInterval(1200, 1800));
+            }
+        }, this.getRandomInterval(2000, 4000) / this.difficulty); // Mucho más frecuente
+        
+        // Spawn de enemigos adicionales cada pocos segundos
+        this.additionalEnemyTimer = setInterval(() => {
+            for (let i = 0; i < Math.floor(this.difficulty); i++) {
+                setTimeout(() => this.spawnEnemy(), i * this.getRandomInterval(300, 600));
+            }
+        }, this.getRandomInterval(3000, 6000));
         
         this.bitcoinTimer = setInterval(() => {
             this.spawnBitcoin();
-        }, this.getRandomInterval(10000, 40000));
+        }, this.getRandomInterval(8000, 25000)); // Bitcoins un poco más frecuentes para compensar
         
         console.log('🎮 Juego iniciado');
     }
@@ -186,19 +254,106 @@ class ChampignonGame {
     jump() {
         if (this.isJumping || !this.gameRunning) return;
         
+        // Iniciar el salto variable
+        this.startVariableJump();
+    }
+    
+    startVariableJump() {
         this.isJumping = true;
-        this.player.classList.add('jumping');
-        this.player.style.bottom = '180px';
+        this.jumpStartTime = Date.now();
+        this.jumpPower = 0;
+        this.maxJumpHeight = 234; // 30% más alto que 180px
+        this.minJumpHeight = 120;
+        this.maxJumpDuration = 400; // Máximo tiempo de carga en ms
         
+        this.player.classList.add('jumping');
         this.playSound('jump');
+        
+        // Comenzar la carga del salto
+        this.chargeJump();
+    }
+    
+    chargeJump() {
+        if (!this.isJumping) return;
+        
+        const currentTime = Date.now();
+        const chargeDuration = Math.min(currentTime - this.jumpStartTime, this.maxJumpDuration);
+        
+        // Calcular la potencia del salto (0 a 1)
+        this.jumpPower = chargeDuration / this.maxJumpDuration;
+        
+        // Mostrar indicador de carga visual
+        this.showJumpChargeIndicator();
+        
+        // Aplicar la altura en tiempo real para feedback visual
+        const previewHeight = 10 + (this.jumpPower * 20); // Preview sutil
+        this.player.style.bottom = (80 + previewHeight) + 'px';
+        
+        // Continuar cargando si el espacio sigue presionado
+        requestAnimationFrame(() => this.chargeJump());
+    }
+    
+    showJumpChargeIndicator() {
+        // Crear indicador si no existe
+        if (!this.jumpIndicator) {
+            this.jumpIndicator = document.createElement('div');
+            this.jumpIndicator.className = 'jump-charge-indicator';
+            
+            this.jumpChargeBar = document.createElement('div');
+            this.jumpChargeBar.className = 'jump-charge-bar';
+            
+            this.jumpIndicator.appendChild(this.jumpChargeBar);
+            this.gameContainer.appendChild(this.jumpIndicator);
+        }
+        
+        // Actualizar la barra de carga
+        this.jumpChargeBar.style.width = (this.jumpPower * 100) + '%';
+    }
+    
+    hideJumpChargeIndicator() {
+        if (this.jumpIndicator && this.jumpIndicator.parentNode) {
+            this.jumpIndicator.parentNode.removeChild(this.jumpIndicator);
+            this.jumpIndicator = null;
+            this.jumpChargeBar = null;
+        }
+    }
+    
+    executeJump() {
+        if (!this.isJumping) return;
+        
+        // Ocultar indicador de carga
+        this.hideJumpChargeIndicator();
+        
+        // Calcular la altura final del salto
+        const finalHeight = this.minJumpHeight + (this.maxJumpHeight - this.minJumpHeight) * this.jumpPower;
+        
+        // Ejecutar el salto con la altura calculada
+        this.player.style.bottom = (80 + finalHeight) + 'px';
+        
+        // Duración del salto basada en la altura
+        const jumpDuration = 300 + (this.jumpPower * 200); // Entre 300ms y 500ms
+        
+        // Sonido diferente según la potencia del salto
+        if (this.jumpPower > 0.8) {
+            this.playSound('jump'); // Salto alto
+        } else if (this.jumpPower > 0.4) {
+            this.sounds.jump.freq = 500; // Salto medio
+            this.playSound('jump');
+            this.sounds.jump.freq = 659; // Restaurar
+        } else {
+            this.sounds.jump.freq = 400; // Salto bajo
+            this.playSound('jump');
+            this.sounds.jump.freq = 659; // Restaurar
+        }
         
         setTimeout(() => {
             this.player.style.bottom = '80px';
             setTimeout(() => {
                 this.isJumping = false;
                 this.player.classList.remove('jumping');
+                this.jumpPower = 0;
             }, 200);
-        }, 300);
+        }, jumpDuration);
     }
     
     spawnEnemy() {
@@ -206,12 +361,23 @@ class ChampignonGame {
         
         const enemy = document.createElement('div');
         enemy.className = 'enemy';
-        enemy.style.animationDuration = `${3 / this.gameSpeed}s`;
         
-        // Añadir variación de enemigos
-        const enemyTypes = ['🐻', '🐺', '🦝'];
-        const randomType = enemyTypes[Math.floor(Math.random() * enemyTypes.length)];
-        enemy.style.setProperty('--enemy-emoji', `"${randomType}"`);
+        // Velocidad variable más agresiva
+        const speedVariation = 1 + (Math.random() * this.difficulty * 0.3);
+        const baseSpeed = this.gameSpeed * speedVariation;
+        enemy.style.animationDuration = `${2.5 / baseSpeed}s`; // Más rápido base
+        
+        // Ocasionalmente spawn a diferentes alturas para más dificultad
+        if (Math.random() < 0.15) {
+            enemy.style.bottom = '140px'; // Enemigos que vuelan alto
+            enemy.classList.add('flying-enemy');
+        }
+        
+        // Enemigos más grandes ocasionalmente
+        if (Math.random() < 0.1 + (this.difficulty * 0.05)) {
+            enemy.style.transform = 'scale(1.3)';
+            enemy.classList.add('big-enemy');
+        }
         
         this.gameContainer.appendChild(enemy);
         this.enemies.push(enemy);
@@ -222,7 +388,7 @@ class ChampignonGame {
                 enemy.parentNode.removeChild(enemy);
                 this.enemies = this.enemies.filter(e => e !== enemy);
             }
-        }, (4000 / this.gameSpeed));
+        }, (3500 / baseSpeed));
     }
     
     spawnBitcoin() {
@@ -317,6 +483,7 @@ class ChampignonGame {
         // Limpiar timers
         clearInterval(this.scoreTimer);
         clearInterval(this.enemyTimer);
+        clearInterval(this.additionalEnemyTimer);
         clearInterval(this.bitcoinTimer);
         
         // Limpiar elementos del juego
@@ -363,6 +530,7 @@ class ChampignonGame {
         this.player.style.bottom = '80px';
         this.isJumping = false;
         this.cleanupGameElements();
+        this.hideJumpChargeIndicator();
         
         console.log('🔄 Juego reiniciado');
     }

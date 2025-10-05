@@ -31,18 +31,62 @@ body {
     to { text-shadow: 3px 3px 0px #000, 0 0 20px #FF6B6B, 0 0 30px #FF6B6B; }
 }
 
-/* Contenedor del juego */
+/* Contenedor del juego - Fondo 8-bit */
 .game-container {
     width: 800px;
     height: 400px;
-    background: linear-gradient(180deg, #87CEEB 0%, #228B22 80%, #8B4513 100%);
+    background: 
+        repeating-linear-gradient(
+            0deg,
+            #87CEEB 0px, #87CEEB 8px,
+            #ADD8E6 8px, #ADD8E6 16px
+        ),
+        repeating-linear-gradient(
+            90deg,
+            transparent 0px, transparent 16px,
+            rgba(255,255,255,0.1) 16px, rgba(255,255,255,0.1) 32px
+        );
     border: 4px solid #000;
     position: relative;
     overflow: hidden;
-    box-shadow: 0 0 20px rgba(0,0,0,0.5);
+    box-shadow: inset 4px 4px 0px #FFF, inset -4px -4px 0px #333, 0 0 20px rgba(0,0,0,0.7);
+    image-rendering: pixelated;
 }
 
-/* Suelo del juego */
+.game-container::before {
+    content: '';
+    position: absolute;
+    bottom: 80px;
+    left: 0;
+    width: 100%;
+    height: 200px;
+    background: repeating-linear-gradient(
+        180deg,
+        #228B22 0px, #228B22 8px,
+        #32CD32 8px, #32CD32 16px,
+        #006400 16px, #006400 24px,
+        #228B22 24px, #228B22 32px
+    );
+    image-rendering: pixelated;
+    opacity: 0.3;
+}
+
+.game-container::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100px;
+    background: repeating-linear-gradient(
+        90deg,
+        rgba(255,255,255,0.1) 0px, rgba(255,255,255,0.1) 2px,
+        transparent 2px, transparent 8px
+    );
+    image-rendering: pixelated;
+}
+
+/* Suelo del juego - Pixelado 8-bit */
 .ground {
     position: absolute;
     bottom: 0;
@@ -50,46 +94,86 @@ body {
     height: 80px;
     background: repeating-linear-gradient(
         90deg,
-        #8B4513 0px,
-        #8B4513 20px,
-        #A0522D 20px,
-        #A0522D 40px
+        #654321 0px, #654321 8px,
+        #8B4513 8px, #8B4513 16px,
+        #A0522D 16px, #A0522D 24px,
+        #654321 24px, #654321 32px
     );
-    border-top: 4px solid #654321;
+    border-top: 4px solid #2F1B0C;
+    image-rendering: pixelated;
+    box-shadow: inset 0 4px 0px #CD853F, inset 0 -4px 0px #2F1B0C;
+    position: relative;
 }
 
-/* Jugador (Champiñón) */
+.ground::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 20px;
+    background: repeating-linear-gradient(
+        90deg,
+        #32CD32 0px, #32CD32 4px,
+        #228B22 4px, #228B22 8px,
+        #006400 8px, #006400 12px,
+        #228B22 12px, #228B22 16px
+    );
+    image-rendering: pixelated;
+}
+
+/* Jugador (Champiñón) - Pixelado 8-bit */
 .player {
     position: absolute;
     bottom: 80px;
     left: 100px;
     width: 40px;
     height: 50px;
-    background: #FF6B6B;
+    background: linear-gradient(0deg, 
+        #FF4444 0%, #FF4444 10%,
+        #FF6B6B 10%, #FF6B6B 90%,
+        #FFB3B3 90%, #FFB3B3 100%);
     border: 3px solid #000;
-    border-radius: 50% 50% 20% 20%;
+    image-rendering: pixelated;
+    image-rendering: -moz-crisp-edges;
+    image-rendering: crisp-edges;
     transition: bottom 0.1s ease-out;
     z-index: 10;
+    box-shadow: inset 2px 2px 0px #FFB3B3, inset -2px -2px 0px #CC3333;
 }
 
 .player::before {
     content: '';
     position: absolute;
-    top: -10px;
-    left: 5px;
-    width: 30px;
-    height: 25px;
-    background: #8B4513;
+    top: -12px;
+    left: 3px;
+    width: 34px;
+    height: 28px;
+    background: linear-gradient(45deg,
+        #8B4513 0%, #8B4513 25%,
+        #A0522D 25%, #A0522D 50%,
+        #CD853F 50%, #CD853F 75%,
+        #DEB887 75%, #DEB887 100%);
     border: 2px solid #000;
-    border-radius: 50%;
+    image-rendering: pixelated;
+    box-shadow: inset 2px 2px 0px #DEB887, inset -2px -2px 0px #654321;
 }
 
 .player::after {
-    content: '👀';
+    content: '';
     position: absolute;
-    top: 20px;
-    left: 8px;
-    font-size: 16px;
+    top: 18px;
+    left: 12px;
+    width: 16px;
+    height: 8px;
+    background: linear-gradient(90deg,
+        #000 0%, #000 30%,
+        #FFF 30%, #FFF 35%,
+        #000 35%, #000 65%,
+        #FFF 65%, #FFF 70%,
+        #000 70%, #000 100%);
+    image-rendering: pixelated;
+    border-radius: 0;
 }
 
 .player.jumping {
@@ -102,51 +186,145 @@ body {
     100% { bottom: 80px; }
 }
 
-/* Enemigos */
+/* Enemigos - Osos Pixelados 8-bit */
 .enemy {
     position: absolute;
     bottom: 80px;
     right: -60px;
     width: 50px;
     height: 40px;
-    background: #8B4513;
+    background: linear-gradient(45deg,
+        #4A4A4A 0%, #4A4A4A 25%,
+        #654321 25%, #654321 50%,
+        #8B4513 50%, #8B4513 75%,
+        #A0522D 75%, #A0522D 100%);
     border: 3px solid #000;
-    border-radius: 60% 60% 40% 40%;
-    animation: moveLeft 3s linear infinite;
+    image-rendering: pixelated;
+    animation: moveLeft 3s linear infinite, bearWalk 0.5s infinite;
     z-index: 5;
+    box-shadow: inset 2px 2px 0px #CD853F, inset -2px -2px 0px #2F1B0C;
 }
 
 .enemy::before {
-    content: '🐻';
+    content: '';
     position: absolute;
-    top: 5px;
+    top: 2px;
     left: 8px;
-    font-size: 24px;
+    width: 30px;
+    height: 20px;
+    background: linear-gradient(0deg,
+        #000 0%, #000 15%,
+        #8B4513 15%, #8B4513 85%,
+        #A0522D 85%, #A0522D 100%);
+    border: 2px solid #000;
+    image-rendering: pixelated;
 }
 
-/* Bitcoins */
+.enemy::after {
+    content: '';
+    position: absolute;
+    top: 8px;
+    left: 15px;
+    width: 16px;
+    height: 6px;
+    background: linear-gradient(90deg,
+        #FF0000 0%, #FF0000 25%,
+        #000 25%, #000 40%,
+        #FF0000 40%, #FF0000 60%,
+        #000 60%, #000 75%,
+        #FF0000 75%, #FF0000 100%);
+    image-rendering: pixelated;
+}
+
+@keyframes bearWalk {
+    0% { transform: scaleX(1); }
+    50% { transform: scaleX(0.95); }
+    100% { transform: scaleX(1); }
+}
+
+/* Enemigos especiales */
+.enemy.flying-enemy {
+    background: linear-gradient(45deg,
+        #800080 0%, #800080 25%,
+        #9932CC 25%, #9932CC 50%,
+        #BA55D3 50%, #BA55D3 75%,
+        #DDA0DD 75%, #DDA0DD 100%);
+    animation: moveLeft 2s linear infinite, fly 1s ease-in-out infinite;
+}
+
+.enemy.big-enemy {
+    box-shadow: inset 3px 3px 0px #CD853F, inset -3px -3px 0px #2F1B0C, 0 0 10px rgba(139,69,19,0.5);
+    filter: hue-rotate(20deg) brightness(1.2);
+}
+
+@keyframes fly {
+    0% { bottom: 140px; transform: translateY(0px); }
+    50% { bottom: 140px; transform: translateY(-8px); }
+    100% { bottom: 140px; transform: translateY(0px); }
+}
+
+/* Indicador de carga de salto */
+.jump-charge-indicator {
+    position: absolute;
+    bottom: 140px;
+    left: 95px;
+    width: 50px;
+    height: 8px;
+    background: rgba(0,0,0,0.3);
+    border: 2px solid #000;
+    z-index: 15;
+    image-rendering: pixelated;
+}
+
+.jump-charge-bar {
+    height: 100%;
+    background: linear-gradient(90deg, #00FF00 0%, #FFFF00 50%, #FF0000 100%);
+    width: 0%;
+    transition: width 0.1s ease-out;
+    image-rendering: pixelated;
+}
+
+/* Bitcoins - Pixelados 8-bit */
 .bitcoin {
     position: absolute;
     bottom: 120px;
     right: -40px;
     width: 30px;
     height: 30px;
-    background: #FFD700;
+    background: linear-gradient(45deg,
+        #FFD700 0%, #FFD700 25%,
+        #FFA500 25%, #FFA500 50%,
+        #FFFF00 50%, #FFFF00 75%,
+        #DAA520 75%, #DAA520 100%);
     border: 3px solid #000;
-    border-radius: 50%;
-    animation: moveLeft 4s linear infinite, spin 1s linear infinite;
+    image-rendering: pixelated;
+    animation: moveLeft 4s linear infinite, bitcoinFloat 2s ease-in-out infinite;
     z-index: 5;
-    box-shadow: 0 0 10px #FFD700;
+    box-shadow: 0 0 15px #FFD700, inset 2px 2px 0px #FFFF00, inset -2px -2px 0px #B8860B;
 }
 
 .bitcoin::before {
-    content: '₿';
+    content: '';
     position: absolute;
-    top: 2px;
-    left: 6px;
-    font-size: 18px;
-    color: #000;
-    font-weight: bold;
+    top: 6px;
+    left: 8px;
+    width: 14px;
+    height: 18px;
+    background: linear-gradient(0deg,
+        #000 0%, #000 20%,
+        #FFD700 20%, #FFD700 30%,
+        #000 30%, #000 35%,
+        #FFD700 35%, #FFD700 65%,
+        #000 65%, #000 70%,
+        #FFD700 70%, #FFD700 80%,
+        #000 80%, #000 100%);
+    image-rendering: pixelated;
+}
+
+@keyframes bitcoinFloat {
+    0% { transform: translateY(0px) scale(1); }
+    50% { transform: translateY(-5px) scale(1.1); }
+    100% { transform: translateY(0px) scale(1); }
 }
 
 /* Animaciones */
