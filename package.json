@@ -1,0 +1,80 @@
+{
+  "name": "champirug",
+  "version": "1.0.0",
+  "description": "🍄 Juego 8-bit del champiñón saltarín estilo Chrome Dino - Esquiva enemigos y recoge bitcoins",
+  "main": "index.html",
+  "scripts": {
+    "start": "python -m http.server 8000",
+    "serve": "npx http-server -p 8000",
+    "dev": "npx live-server --port=8000 --open=/index.html",
+    "build": "echo 'No build process needed for static HTML game'",
+    "test": "echo 'No tests configured yet'",
+    "lint": "echo 'No linting configured yet'"
+  },
+  "keywords": [
+    "game",
+    "html5",
+    "javascript",
+    "8bit",
+    "retro",
+    "champiñon",
+    "mario",
+    "chrome-dino",
+    "bitcoin",
+    "browser-game",
+    "pixel-art",
+    "web-game"
+  ],
+  "author": {
+    "name": "Chema",
+    "url": "https://github.com/Dovaskul"
+  },
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Dovaskul/champirug.git"
+  },
+  "bugs": {
+    "url": "https://github.com/Dovaskul/champirug/issues"
+  },
+  "homepage": "https://github.com/Dovaskul/champirug#readme",
+  "engines": {
+    "node": ">=14.0.0"
+  },
+  "browserslist": [
+    "> 1%",
+    "last 2 versions",
+    "not dead",
+    "not ie 11"
+  ],
+  "devDependencies": {},
+  "dependencies": {},
+  "files": [
+    "index.html",
+    "css/",
+    "js/",
+    "assets/",
+    "README.md"
+  ],
+  "config": {
+    "port": 8000,
+    "host": "localhost"
+  },
+  "gameInfo": {
+    "title": "Champiñón Saltarín 8-bit",
+    "genre": "Arcade/Endless Runner",
+    "platform": "Web Browser",
+    "controls": "Keyboard/Mouse/Touch",
+    "rating": "All Ages",
+    "features": [
+      "8-bit pixel art style",
+      "Progressive difficulty",
+      "Local high score",
+      "Web Audio API sounds",
+      "Responsive design",
+      "Touch controls",
+      "Multiple enemy types",
+      "Power-ups system"
+    ]
+  }
+}
