@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Champirug - v4.3 Enhanced Wallet Selection</title>
+    <title>Champirug - v2.1 Custom Sprites</title>
     <style>
         * {
             margin: 0;
@@ -225,24 +225,6 @@
             background: #8A2BE2 !important;
             transform: scale(1.05);
             box-shadow: 0 2px 8px rgba(147,112,219,0.4);
-        }
-
-        /* Logout Button Styling */
-        #walletConnectBtn[style*="DC143C"] {
-            animation: logoutPulse 3s ease-in-out infinite;
-        }
-
-        #walletConnectBtn[style*="DC143C"]:hover {
-            background: #B22222 !important;
-        }
-
-        @keyframes logoutPulse {
-            0%, 100% { 
-                box-shadow: 0 0 0 0 rgba(220,20,60,0.4);
-            }
-            50% { 
-                box-shadow: 0 0 0 3px rgba(220,20,60,0.1);
-            }
         }
         
         /* Animaciones */
@@ -472,14 +454,6 @@
             // Check if wallet is connected
             isConnected() {
                 return !!(this.address && this.signature);
-            }
-
-            // Disconnect wallet
-            disconnect() {
-                this.connectedWallet = null;
-                this.address = null;
-                this.signature = null;
-                console.log('🔓 Wallet authentication cleared');
             }
         }
 
@@ -946,36 +920,6 @@
                 }
             }
 
-            // Disconnect wallet
-            disconnectWallet() {
-                try {
-                    console.log('🔓 Disconnecting wallet...');
-                    
-                    const wasConnected = walletAuth.isConnected();
-                    const walletName = walletAuth.connectedWallet;
-                    const address = walletAuth.address;
-                    
-                    // Disconnect wallet
-                    walletAuth.disconnect();
-                    
-                    // Clear stored wallet info
-                    localStorage.removeItem('champiWalletAddress');
-                    localStorage.removeItem('champiWalletType');
-                    
-                    // Update UI
-                    this.updateWalletStatus();
-                    
-                    if (wasConnected) {
-                        alert(`🔓 Wallet disconnected successfully!\n\nAddress: ${address}\nWallet: ${walletName || 'Unknown'}\n\nYou can reconnect anytime to compete in the global leaderboard.`);
-                        console.log('✅ Wallet disconnected successfully');
-                    }
-                    
-                } catch (error) {
-                    console.error('❌ Error disconnecting wallet:', error);
-                    alert(`❌ Error disconnecting wallet: ${error.message}`);
-                }
-            }
-
             // Show donation modal
             showDonation() {
                 const donationAddress = 'bc1p9vdlyxa2t4maf40rxjsnrrfu77gh96y4s4c9xhz60pq083q5c5dst60hxz';
@@ -1329,10 +1273,9 @@ Thank you for supporting indie game development! 🍄`;
                     this.walletStatusEl.style.color = '#90EE90';
                     
                     if (this.walletConnectBtn) {
-                        this.walletConnectBtn.innerHTML = '🔓 Logout';
-                        this.walletConnectBtn.style.background = '#DC143C';
-                        this.walletConnectBtn.disabled = false;
-                        this.walletConnectBtn.onclick = () => this.disconnectWallet();
+                        this.walletConnectBtn.innerHTML = '₿ Connected ✅';
+                        this.walletConnectBtn.style.background = '#32CD32';
+                        this.walletConnectBtn.disabled = true;
                     }
                 } else {
                     this.walletStatusEl.innerHTML = '🔑 Wallet: Not connected';
@@ -1342,7 +1285,6 @@ Thank you for supporting indie game development! 🍄`;
                         this.walletConnectBtn.innerHTML = '₿ Connect Wallet';
                         this.walletConnectBtn.style.background = '#FF8C00';
                         this.walletConnectBtn.disabled = false;
-                        this.walletConnectBtn.onclick = () => this.connectWallet();
                     }
                 }
             }
@@ -1365,24 +1307,8 @@ Thank you for supporting indie game development! 🍄`;
                         return;
                     }
 
-                    // Show available wallets info
-                    console.log('📱 Available wallets:', availableWallets.map(w => w.name));
-                    
-                    // If multiple wallets, let user choose
-                    let selectedWallet = 'auto';
-                    if (availableWallets.length > 1) {
-                        const walletList = availableWallets.map((w, i) => `${i+1}. ${w.name} (${w.type})`).join('\n');
-                        const choice = prompt(`🔗 Multiple Bitcoin wallets detected:\n\n${walletList}\n\nWhich wallet do you want to use?\nType: unisat or xverse\n(Press Cancel to use first available)`);
-                        if (choice && ['unisat', 'xverse'].includes(choice.toLowerCase().trim())) {
-                            selectedWallet = choice.toLowerCase().trim();
-                            console.log('👤 User selected wallet:', selectedWallet);
-                        }
-                    } else if (availableWallets.length === 1) {
-                        console.log('📱 Only one wallet available:', availableWallets[0].name);
-                    }
-
                     // Connect to wallet
-                    const walletInfo = await walletAuth.connectWallet(selectedWallet);
+                    const walletInfo = await walletAuth.connectWallet();
                     
                     // Update UI
                     this.updateWalletStatus();
@@ -1571,12 +1497,6 @@ Thank you for supporting indie game development! 🍄`;
         window.addEventListener('load', () => {
             console.log('🚀 Starting CHAMPIRUG...');
             game = new ChampiGame();
-            
-            // Update wallet status on page load
-            setTimeout(() => {
-                game.updateWalletStatus();
-                console.log('✅ Wallet status updated on page load');
-            }, 500);
         });
     </script>
 </body>
