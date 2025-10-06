@@ -1365,8 +1365,24 @@ Thank you for supporting indie game development! 🍄`;
                         return;
                     }
 
+                    // Show available wallets info
+                    console.log('📱 Available wallets:', availableWallets.map(w => w.name));
+                    
+                    // If multiple wallets, let user choose
+                    let selectedWallet = 'auto';
+                    if (availableWallets.length > 1) {
+                        const walletList = availableWallets.map((w, i) => `${i+1}. ${w.name} (${w.type})`).join('\n');
+                        const choice = prompt(`🔗 Multiple Bitcoin wallets detected:\n\n${walletList}\n\nWhich wallet do you want to use?\nType: unisat or xverse\n(Press Cancel to use first available)`);
+                        if (choice && ['unisat', 'xverse'].includes(choice.toLowerCase().trim())) {
+                            selectedWallet = choice.toLowerCase().trim();
+                            console.log('👤 User selected wallet:', selectedWallet);
+                        }
+                    } else if (availableWallets.length === 1) {
+                        console.log('📱 Only one wallet available:', availableWallets[0].name);
+                    }
+
                     // Connect to wallet
-                    const walletInfo = await walletAuth.connectWallet();
+                    const walletInfo = await walletAuth.connectWallet(selectedWallet);
                     
                     // Update UI
                     this.updateWalletStatus();
@@ -1555,6 +1571,12 @@ Thank you for supporting indie game development! 🍄`;
         window.addEventListener('load', () => {
             console.log('🚀 Starting CHAMPIRUG...');
             game = new ChampiGame();
+            
+            // Update wallet status on page load
+            setTimeout(() => {
+                game.updateWalletStatus();
+                console.log('✅ Wallet status updated on page load');
+            }, 500);
         });
     </script>
 </body>
