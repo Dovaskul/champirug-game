@@ -281,11 +281,36 @@
         </div>
     </div>
 
-    <!-- Firebase Configuration -->
-    <script src="js/firebase-config.js" type="module"></script>
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-database-compat.js"></script>
 
     <script>
         console.log('🍄 CHAMPIRUG LOADING...');
+
+        // Firebase Configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyDyRpfHUh1cAlJiul5W9BtiGkqihl1D_j0",
+            authDomain: "champi-22efb.firebaseapp.com",
+            projectId: "champi-22efb",
+            storageBucket: "champi-22efb.firebasestorage.app",
+            messagingSenderId: "263144232269",
+            appId: "1:263144232269:web:1a9874d93a667a1f279304",
+            measurementId: "G-208QEHZJTZ",
+            databaseURL: "https://champi-22efb-default-rtdb.firebaseio.com/"
+        };
+
+        // Initialize Firebase
+        let firebaseApp = null;
+        let firebaseDatabase = null;
+        
+        try {
+            firebaseApp = firebase.apps.length ? firebase.app() : firebase.initializeApp(firebaseConfig);
+            firebaseDatabase = firebase.database();
+            console.log('🔥 Firebase initialized successfully');
+        } catch (error) {
+            console.warn('⚠️ Firebase initialization failed:', error);
+        }
 
         // Enhanced audio system
         class SimpleAudio {
@@ -449,6 +474,62 @@
             }
         }
 
+        // Firebase Leaderboard Manager
+        class FirebaseLeaderboard {
+            constructor() {
+                this.database = firebaseDatabase;
+                this.isAvailable = !!this.database;
+            }
+
+            async saveScore(playerName, score) {
+                if (!this.isAvailable) return false;
+                
+                try {
+                    const scoreData = {
+                        name: playerName,
+                        score: score,
+                        timestamp: Date.now(),
+                        date: new Date().toLocaleDateString()
+                    };
+                    
+                    await this.database.ref('leaderboard').push(scoreData);
+                    console.log('🌐 Score saved to Firebase:', scoreData);
+                    return true;
+                } catch (error) {
+                    console.error('❌ Error saving score to Firebase:', error);
+                    return false;
+                }
+            }
+
+            async getTopScores(limit = 10) {
+                if (!this.isAvailable) return [];
+                
+                try {
+                    const snapshot = await this.database.ref('leaderboard')
+                        .orderByChild('score')
+                        .limitToLast(limit)
+                        .once('value');
+                    
+                    if (snapshot.exists()) {
+                        const scores = [];
+                        snapshot.forEach((childSnapshot) => {
+                            scores.push(childSnapshot.val());
+                        });
+                        
+                        // Sort by score descending
+                        return scores
+                            .sort((a, b) => b.score - a.score)
+                            .slice(0, limit);
+                    }
+                    
+                    return [];
+                } catch (error) {
+                    console.error('❌ Error getting scores from Firebase:', error);
+                    return [];
+                }
+            }
+        }
+
         class ChampiGame {
             constructor() {
                 console.log('🎮 Initializing game...');
@@ -499,8 +580,8 @@
                 this.audio = new SimpleAudio();
                 
                 // Firebase Leaderboard
-                this.firebaseLeaderboard = null;
-                this.initFirebaseLeaderboard();
+                this.firebaseLeaderboard = new FirebaseLeaderboard();
+                console.log('🔥 Firebase Leaderboard ready:', this.firebaseLeaderboard.isAvailable);
                 
                 this.init();
                 console.log('✅ Game initialized successfully!');
@@ -573,6 +654,13 @@
                 // Inicializar leaderboard display
                 this.updateLeaderboardDisplay();
                 
+                // Load online leaderboard at startup
+                if (this.firebaseLeaderboard && this.firebaseLeaderboard.isAvailable) {
+                    setTimeout(() => {
+                        this.updateOnlineLeaderboard();
+                    }, 2000);
+                }
+                
                 // Listen for window resize to update dynamic sizes
                 window.addEventListener('resize', () => {
                     this.updateDynamicSizes();
@@ -584,45 +672,37 @@
                 console.log('🎯 Controls configured. Use ARROW KEYS to move!');
             }
 
-            // Initialize Firebase Leaderboard
-            async initFirebaseLeaderboard() {
-                try {
-                    // Wait for Firebase to be available
-                    if (typeof window.FirebaseLeaderboard !== 'undefined') {
-                        this.firebaseLeaderboard = new window.FirebaseLeaderboard();
-                        console.log('🔥 Firebase Leaderboard initialized');
-                        
-                        // Load and display online leaderboard
-                        await this.updateOnlineLeaderboard();
-                    } else {
-                        console.warn('⚠️ Firebase not available, using local leaderboard only');
-                    }
-                } catch (error) {
-                    console.warn('⚠️ Firebase initialization failed:', error);
-                }
-            }
-
             // Update leaderboard with online scores
             async updateOnlineLeaderboard() {
-                if (!this.firebaseLeaderboard) return;
+                if (!this.firebaseLeaderboard || !this.firebaseLeaderboard.isAvailable) {
+                    console.log('� Using local leaderboard only');
+                    return;
+                }
                 
                 try {
+                    console.log('🌐 Fetching online scores...');
                     const onlineScores = await this.firebaseLeaderboard.getTopScores(10);
+                    console.log('📊 Online scores received:', onlineScores.length);
                     
-                    // Merge online and local scores
-                    const allScores = [...this.leaderboard, ...onlineScores];
-                    
-                    // Remove duplicates and sort
-                    const uniqueScores = allScores.filter((score, index, arr) => 
-                        arr.findIndex(s => s.score === score.score && s.time === score.time) === index
-                    );
-                    
-                    this.leaderboard = uniqueScores
-                        .sort((a, b) => b.score - a.score)
-                        .slice(0, 10);
-                    
-                    this.updateLeaderboardDisplay();
-                    console.log('🌐 Online leaderboard updated');
+                    if (onlineScores.length > 0) {
+                        // Merge online and local scores
+                        const allScores = [...this.leaderboard, ...onlineScores];
+                        
+                        // Remove duplicates based on score and timestamp
+                        const uniqueScores = allScores.filter((score, index, arr) => 
+                            arr.findIndex(s => 
+                                s.score === score.score && 
+                                (s.timestamp === score.timestamp || s.time === score.time)
+                            ) === index
+                        );
+                        
+                        this.leaderboard = uniqueScores
+                            .sort((a, b) => b.score - a.score)
+                            .slice(0, 10);
+                        
+                        this.updateLeaderboardDisplay();
+                        console.log('✅ Online leaderboard updated with', onlineScores.length, 'scores');
+                    }
                 } catch (error) {
                     console.warn('⚠️ Failed to update online leaderboard:', error);
                 }
@@ -903,28 +983,39 @@
             }
 
             async addToLeaderboard(entry) {
-                // Add to local leaderboard
+                console.log('📝 Adding score to leaderboard:', entry);
+                
+                // Add to local leaderboard first
                 this.leaderboard.push(entry);
                 this.leaderboard.sort((a, b) => b.score - a.score);
                 this.leaderboard = this.leaderboard.slice(0, 10);
                 localStorage.setItem('champiLeaderboard', JSON.stringify(this.leaderboard));
                 
                 // Save to Firebase if available
-                if (this.firebaseLeaderboard) {
+                if (this.firebaseLeaderboard && this.firebaseLeaderboard.isAvailable) {
                     try {
-                        // Ask for player name for online leaderboard
+                        console.log('🔄 Saving to Firebase...');
                         const playerName = await this.getPlayerName();
                         const success = await this.firebaseLeaderboard.saveScore(playerName, entry.score);
                         
                         if (success) {
-                            console.log('🌐 Score saved to online leaderboard!');
-                            // Refresh online leaderboard
-                            await this.updateOnlineLeaderboard();
+                            console.log('✅ Score saved to Firebase!');
+                            // Wait a moment then refresh online leaderboard
+                            setTimeout(async () => {
+                                await this.updateOnlineLeaderboard();
+                            }, 1000);
+                        } else {
+                            console.log('❌ Failed to save to Firebase');
                         }
                     } catch (error) {
-                        console.warn('⚠️ Failed to save to online leaderboard:', error);
+                        console.warn('⚠️ Error saving to Firebase:', error);
                     }
+                } else {
+                    console.log('📱 Firebase not available, using local only');
                 }
+                
+                // Update display immediately with local data
+                this.updateLeaderboardDisplay();
             }
 
             // Get player name for online leaderboard
