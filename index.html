@@ -193,6 +193,27 @@
             color: #FFD700;
             font-weight: bold;
         }
+
+        /* Wallet Connect Button Animation */
+        #walletConnectBtn {
+            animation: walletPulse 2s ease-in-out infinite;
+            font-weight: bold;
+            text-shadow: 0 0 2px rgba(0,0,0,0.3);
+        }
+
+        #walletConnectBtn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 2px 8px rgba(255,140,0,0.3);
+        }
+
+        @keyframes walletPulse {
+            0%, 100% { 
+                box-shadow: 0 0 0 0 rgba(255,140,0,0.4);
+            }
+            50% { 
+                box-shadow: 0 0 0 4px rgba(255,140,0,0.1);
+            }
+        }
         
         /* Animaciones */
         .player.jumping {
@@ -234,7 +255,10 @@
             <div>🏆 Best: <span id="highScore">0</span></div>
             <div id="jumpStatus">🔄 Status: Waiting...</div>
             <div id="walletStatus" style="font-size: 12px; opacity: 0.8;">🔑 Wallet: Not connected</div>
-            <div><button onclick="game.audio.toggleMute()" style="background:#FFD700;border:none;padding:5px;border-radius:3px;cursor:pointer;">🔊 Music</button></div>
+            <div>
+                <button onclick="game.audio.toggleMute()" style="background:#FFD700;border:none;padding:5px;border-radius:3px;cursor:pointer;margin-right:5px;">🔊 Music</button>
+                <button id="walletConnectBtn" onclick="game.connectWallet()" style="background:#FF8C00;border:none;padding:5px;border-radius:3px;cursor:pointer;font-size:11px;">₿ Connect Wallet</button>
+            </div>
         </div>
 
         <!-- Leaderboard -->
@@ -264,9 +288,10 @@
             <p>🐻 Avoid the bears</p>
             <p>🪙 Collect the coins</p>
             <br>
-            <p><strong>🔑 LEADERBOARD:</strong></p>
-            <p>🚀 Connect Bitcoin wallet (Unisat/Xverse)</p>
-            <p>🌐 Compete globally with wallet auth</p>
+            <p><strong>🔑 BITCOIN WALLET AUTH:</strong></p>
+            <p>₿ Click <span style="color:#FF8C00;">Connect Wallet</span> button above</p>
+            <p>🚀 Supports Unisat & Xverse wallets</p>
+            <p>🌐 Compete globally with crypto identity</p>
             <br>
             <p><strong style="color: #FFD700;">Press SPACE to start!</strong></p>
         </div>
@@ -707,6 +732,7 @@
                 this.finalTimeEl = document.getElementById('finalTime');
                 this.jumpStatusEl = document.getElementById('jumpStatus');
                 this.walletStatusEl = document.getElementById('walletStatus');
+                this.walletConnectBtn = document.getElementById('walletConnectBtn');
                 this.leaderboardEl = document.getElementById('leaderboardList');
                 this.gameOverLeaderboardEl = document.getElementById('gameOverLeaderboard');
 
@@ -815,6 +841,9 @@
                 // Load online leaderboard at startup and start real-time updates
                 setTimeout(() => {
                     this.updateOnlineLeaderboard();
+                    
+                    // Check for available wallets and update UI
+                    this.checkAvailableWallets();
                     
                     // Start polling for real-time updates every 30 seconds
                     this.onlineLeaderboard.startPolling((onlineScores) => {
@@ -1197,9 +1226,73 @@
                 if (walletAuth.isConnected()) {
                     this.walletStatusEl.innerHTML = `🔑 Wallet: ${walletAuth.getDisplayName()} ✅`;
                     this.walletStatusEl.style.color = '#90EE90';
+                    
+                    if (this.walletConnectBtn) {
+                        this.walletConnectBtn.innerHTML = '₿ Connected ✅';
+                        this.walletConnectBtn.style.background = '#32CD32';
+                        this.walletConnectBtn.disabled = true;
+                    }
                 } else {
                     this.walletStatusEl.innerHTML = '🔑 Wallet: Not connected';
                     this.walletStatusEl.style.color = '#999';
+                    
+                    if (this.walletConnectBtn) {
+                        this.walletConnectBtn.innerHTML = '₿ Connect Wallet';
+                        this.walletConnectBtn.style.background = '#FF8C00';
+                        this.walletConnectBtn.disabled = false;
+                    }
+                }
+            }
+
+            // Manual wallet connection method
+            async connectWallet() {
+                try {
+                    console.log('🔗 Manual wallet connection requested...');
+                    
+                    if (walletAuth.isConnected()) {
+                        alert('✅ Wallet already connected!\n\nAddress: ' + walletAuth.address);
+                        return;
+                    }
+
+                    // Show available wallets
+                    const availableWallets = walletAuth.getAvailableWallets();
+                    
+                    if (availableWallets.length === 0) {
+                        alert('❌ No Bitcoin wallets found!\n\nPlease install:\n• Unisat Wallet (Chrome extension)\n• Xverse Wallet\n\nThen refresh the page.');
+                        return;
+                    }
+
+                    // Connect to wallet
+                    const walletInfo = await walletAuth.connectWallet();
+                    
+                    // Update UI
+                    this.updateWalletStatus();
+                    
+                    // Show success message
+                    alert(`✅ Wallet connected successfully!\n\nWallet: ${walletInfo.wallet}\nAddress: ${walletInfo.address}\n\nYou're ready to compete in the global leaderboard!`);
+                    
+                    console.log('✅ Manual wallet connection successful:', walletInfo);
+                    
+                } catch (error) {
+                    console.error('❌ Manual wallet connection failed:', error);
+                    alert(`❌ Wallet connection failed!\n\nError: ${error.message}\n\nPlease make sure:\n• Your wallet is unlocked\n• You approve the connection request\n• Your wallet supports message signing`);
+                }
+            }
+
+            // Check available wallets and update button
+            checkAvailableWallets() {
+                const availableWallets = walletAuth.getAvailableWallets();
+                
+                if (this.walletConnectBtn) {
+                    if (availableWallets.length === 0) {
+                        this.walletConnectBtn.innerHTML = '❌ No Wallet';
+                        this.walletConnectBtn.style.background = '#666';
+                        this.walletConnectBtn.title = 'Install Unisat or Xverse wallet';
+                    } else {
+                        const walletNames = availableWallets.map(w => w.name).join('/');
+                        this.walletConnectBtn.title = `Connect ${walletNames} wallet`;
+                        console.log('✅ Available wallets:', walletNames);
+                    }
                 }
             }
 
