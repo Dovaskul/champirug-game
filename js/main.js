@@ -1,6 +1,6 @@
 // Punto de entrada principal del juego Champiñón Saltarín
 document.addEventListener('DOMContentLoaded', () => {
-    console.log('🍄 Iniciando Champiñón Saltarín 8-bit...');
+    console.log('Starting Mushroom Jump 8-bit...');
     
     // Verificar soporte del navegador
     if (!checkBrowserSupport()) {
@@ -75,7 +75,7 @@ function showLoadingScreen() {
     `;
     
     loadingDiv.innerHTML = `
-        <div style="font-size: 48px; margin-bottom: 20px; animation: bounce 1s infinite;">🍄</div>
+        <div style="font-size: 48px; margin-bottom: 20px; animation: bounce 1s infinite;">M</div>
         <div style="font-size: 24px; margin-bottom: 10px;">CHAMPIRUG</div>
         <div style="font-size: 12px; margin-bottom: 30px;">Cargando juego...</div>
         <div style="width: 200px; height: 4px; background: rgba(255,255,255,0.3); border-radius: 2px;">
@@ -144,7 +144,7 @@ function setupGlobalHandlers(game) {
     // Manejar visibilidad de la página
     document.addEventListener('visibilitychange', () => {
         if (document.hidden && game.gameRunning) {
-            console.log('🎮 Pestaña oculta - juego pausado automáticamente');
+            console.log('Tab hidden - game paused automatically');
             // El juego ya maneja esto internamente
         }
     });
@@ -212,8 +212,8 @@ function isDevelopmentMode() {
 
 function showWelcomeMessage() {
     console.log(`
-🍄 ===== CHAMPIÑÓN SALTARÍN 8-BIT =====
-🎮 Controles:
+===== MUSHROOM JUMP 8-BIT =====
+Controls:
    • ESPACIO o CLICK: Saltar
    • ESPACIO: Iniciar/Reiniciar
 
@@ -293,4 +293,4 @@ window.champirugUtils = {
 };
 
 // Mensaje de información en consola
-console.log('🍄 Champirug Utils disponibles en window.champirugUtils');
+console.log('Champirug Utils available at window.champirugUtils');

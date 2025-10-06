@@ -5,18 +5,16 @@ class Player {
         
         // Propiedades físicas
         this.x = 100;
-        this.y = 80;
+        this.y = 0;  // Empezar en el suelo (0px desde bottom)
         this.width = 40;
         this.height = 50;
-        
+
         // Propiedades de salto
         this.jumpHeight = 100;
         this.isJumping = false;
         this.jumpSpeed = 0;
         this.gravity = 0.8;
-        this.groundY = 80;
-        
-        // Estados del jugador
+        this.groundY = 0;  // El suelo está en 0px desde bottom        // Estados del jugador
         this.isAlive = true;
         this.invulnerable = false;
         
@@ -25,7 +23,7 @@ class Player {
     
     init() {
         this.resetPosition();
-        console.log('🍄 Jugador inicializado');
+        console.log('Player initialized');
     }
     
     jump() {
