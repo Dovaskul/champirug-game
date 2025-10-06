@@ -214,6 +214,18 @@
                 box-shadow: 0 0 0 4px rgba(255,140,0,0.1);
             }
         }
+
+        /* Donate Button Styling */
+        button[onclick*="showDonation"] {
+            transition: all 0.3s ease;
+            font-weight: bold;
+        }
+
+        button[onclick*="showDonation"]:hover {
+            background: #8A2BE2 !important;
+            transform: scale(1.05);
+            box-shadow: 0 2px 8px rgba(147,112,219,0.4);
+        }
         
         /* Animaciones */
         .player.jumping {
@@ -257,7 +269,8 @@
             <div id="walletStatus" style="font-size: 12px; opacity: 0.8;">🔑 Wallet: Not connected</div>
             <div>
                 <button onclick="game.audio.toggleMute()" style="background:#FFD700;border:none;padding:5px;border-radius:3px;cursor:pointer;margin-right:5px;">🔊 Music</button>
-                <button id="walletConnectBtn" onclick="game.connectWallet()" style="background:#FF8C00;border:none;padding:5px;border-radius:3px;cursor:pointer;font-size:11px;">₿ Connect Wallet</button>
+                <button id="walletConnectBtn" onclick="game.connectWallet()" style="background:#FF8C00;border:none;padding:5px;border-radius:3px;cursor:pointer;font-size:11px;margin-right:5px;">₿ Connect Wallet</button>
+                <button onclick="game.showDonation()" style="background:#9370DB;border:none;padding:5px;border-radius:3px;cursor:pointer;font-size:11px;">💜 Donate</button>
             </div>
         </div>
 
@@ -292,6 +305,9 @@
             <p>₿ Click <span style="color:#FF8C00;">Connect Wallet</span> button above</p>
             <p>🚀 Supports Unisat & Xverse wallets</p>
             <p>🌐 Compete globally with crypto identity</p>
+            <br>
+            <p><strong>💜 SUPPORT DEVELOPMENT:</strong></p>
+            <p>💜 Click <span style="color:#9370DB;">Donate</span> button (you will receive nothing)</p>
             <br>
             <p><strong style="color: #FFD700;">Press SPACE to start!</strong></p>
         </div>
@@ -902,6 +918,35 @@
                 } catch (error) {
                     console.warn('⚠️ Failed to update online leaderboard:', error);
                 }
+            }
+
+            // Show donation modal
+            showDonation() {
+                const donationAddress = 'bc1p9vdlyxa2t4maf40rxjsnrrfu77gh96y4s4c9xhz60pq083q5c5dst60hxz';
+                
+                // Copy to clipboard
+                if (navigator.clipboard && navigator.clipboard.writeText) {
+                    navigator.clipboard.writeText(donationAddress).then(() => {
+                        console.log('✅ Donation address copied to clipboard');
+                    }).catch(err => {
+                        console.warn('⚠️ Failed to copy to clipboard:', err);
+                    });
+                }
+
+                // Show donation dialog
+                const message = `💜 DONATE TO CHAMPIRUG DEVELOPMENT
+You will receive nothing.
+
+₿ Bitcoin Address:
+${donationAddress}
+
+✅ Address copied to clipboard!
+
+Thank you for supporting indie game development! 🍄`;
+
+                alert(message);
+                
+                console.log('💜 Donation address displayed:', donationAddress);
             }
 
             handleStart() {
