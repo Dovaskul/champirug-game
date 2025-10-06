@@ -244,6 +244,93 @@
                 box-shadow: 0 0 0 3px rgba(220,20,60,0.1);
             }
         }
+
+        /* Wallet Selection Modal */
+        .wallet-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.8);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 10000;
+            font-family: 'Courier New', monospace;
+        }
+
+        .wallet-modal-content {
+            background: #fff;
+            padding: 30px;
+            border-radius: 15px;
+            text-align: center;
+            max-width: 400px;
+            width: 90%;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        }
+
+        .wallet-modal h3 {
+            margin: 0 0 20px 0;
+            color: #333;
+            font-size: 18px;
+        }
+
+        .wallet-button {
+            display: inline-block;
+            margin: 10px;
+            padding: 15px 20px;
+            background: #f8f9fa;
+            border: 2px solid #dee2e6;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            min-width: 140px;
+        }
+
+        .wallet-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+
+        .wallet-button.unisat {
+            border-color: #FF8C00;
+            background: linear-gradient(135deg, #FFF5E6, #FFE4B3);
+        }
+
+        .wallet-button.unisat:hover {
+            border-color: #FF8C00;
+            background: linear-gradient(135deg, #FFE4B3, #FFD700);
+        }
+
+        .wallet-button.xverse {
+            border-color: #8A2BE2;
+            background: linear-gradient(135deg, #F3E5F5, #E1BEE7);
+        }
+
+        .wallet-button.xverse:hover {
+            border-color: #8A2BE2;
+            background: linear-gradient(135deg, #E1BEE7, #DDA0DD);
+        }
+
+        .wallet-logo {
+            font-size: 24px;
+            display: block;
+            margin-bottom: 8px;
+        }
+
+        .wallet-close {
+            position: absolute;
+            top: 10px;
+            right: 15px;
+            background: none;
+            border: none;
+            font-size: 20px;
+            cursor: pointer;
+            color: #666;
+        }
         
         /* Animaciones */
         .player.jumping {
@@ -361,12 +448,42 @@
             // Check which wallets are available
             getAvailableWallets() {
                 const wallets = [];
+                
+                // Check for Unisat
                 if (window.unisat) {
-                    wallets.push({ name: 'Unisat', provider: window.unisat, type: 'unisat' });
+                    wallets.push({ 
+                        name: 'Unisat', 
+                        provider: window.unisat, 
+                        type: 'unisat',
+                        logo: '🟠' // Orange circle for Unisat
+                    });
                 }
-                if (window.XverseProviders?.BitcoinProvider) {
-                    wallets.push({ name: 'Xverse', provider: window.XverseProviders.BitcoinProvider, type: 'xverse' });
+                
+                // Check for Xverse (multiple detection methods)
+                const xverseProvider = window.XverseProviders?.BitcoinProvider || 
+                                      window.BitcoinProvider || 
+                                      window.xverse ||
+                                      (window.Xverse && window.Xverse.bitcoin);
+                
+                if (xverseProvider) {
+                    wallets.push({ 
+                        name: 'Xverse', 
+                        provider: xverseProvider, 
+                        type: 'xverse',
+                        logo: '🟣' // Purple circle for Xverse
+                    });
                 }
+                
+                console.log('🔍 Wallet detection results:', {
+                    unisat: !!window.unisat,
+                    xverseProviders: !!window.XverseProviders,
+                    bitcoinProvider: !!window.BitcoinProvider,
+                    xverse: !!window.xverse,
+                    xverseBitcoin: !!(window.Xverse && window.Xverse.bitcoin),
+                    windowKeys: Object.keys(window).filter(k => k.toLowerCase().includes('uni') || k.toLowerCase().includes('xver') || k.toLowerCase().includes('bitcoin')),
+                    found: wallets.map(w => w.name)
+                });
+                
                 return wallets;
             }
 
@@ -1368,21 +1485,62 @@ Thank you for supporting indie game development! 🍄`;
                     // Show available wallets info
                     console.log('📱 Available wallets:', availableWallets.map(w => w.name));
                     
-                    // If multiple wallets, let user choose
-                    let selectedWallet = 'auto';
-                    if (availableWallets.length > 1) {
-                        const walletList = availableWallets.map((w, i) => `${i+1}. ${w.name} (${w.type})`).join('\n');
-                        const choice = prompt(`🔗 Multiple Bitcoin wallets detected:\n\n${walletList}\n\nWhich wallet do you want to use?\nType: unisat or xverse\n(Press Cancel to use first available)`);
-                        if (choice && ['unisat', 'xverse'].includes(choice.toLowerCase().trim())) {
-                            selectedWallet = choice.toLowerCase().trim();
-                            console.log('👤 User selected wallet:', selectedWallet);
-                        }
-                    } else if (availableWallets.length === 1) {
+                    // If only one wallet, connect directly
+                    if (availableWallets.length === 1) {
                         console.log('📱 Only one wallet available:', availableWallets[0].name);
+                        const walletInfo = await walletAuth.connectWallet(availableWallets[0].type);
+                        this.updateWalletStatus();
+                        alert(`✅ Wallet connected successfully!\n\nWallet: ${walletInfo.wallet}\nAddress: ${walletInfo.address}\n\nYou're ready to compete in the global leaderboard!`);
+                        return;
                     }
 
-                    // Connect to wallet
-                    const walletInfo = await walletAuth.connectWallet(selectedWallet);
+                    // Multiple wallets - show visual selector
+                    this.showWalletModal(availableWallets);
+                    
+                } catch (error) {
+                    console.error('❌ Manual wallet connection failed:', error);
+                    alert(`❌ Wallet connection failed!\n\nError: ${error.message}\n\nPlease make sure:\n• Your wallet is unlocked\n• You approve the connection request\n• Your wallet supports message signing`);
+                }
+            }
+
+            // Show wallet selection modal
+            showWalletModal(availableWallets) {
+                const modal = document.getElementById('walletModal');
+                const container = document.getElementById('walletButtonsContainer');
+                
+                // Clear previous buttons
+                container.innerHTML = '';
+                
+                // Create buttons for each wallet
+                availableWallets.forEach(wallet => {
+                    const button = document.createElement('div');
+                    button.className = `wallet-button ${wallet.type}`;
+                    button.onclick = () => this.selectWallet(wallet.type);
+                    
+                    button.innerHTML = `
+                        <div class="wallet-logo">${wallet.logo}</div>
+                        <strong>${wallet.name}</strong><br>
+                        <small>Click to connect</small>
+                    `;
+                    
+                    container.appendChild(button);
+                });
+                
+                // Show modal
+                modal.style.display = 'flex';
+                console.log('📱 Wallet selection modal shown');
+            }
+
+            // Select and connect to wallet
+            async selectWallet(walletType) {
+                try {
+                    console.log('👤 User selected wallet:', walletType);
+                    
+                    // Hide modal
+                    document.getElementById('walletModal').style.display = 'none';
+                    
+                    // Connect to selected wallet
+                    const walletInfo = await walletAuth.connectWallet(walletType);
                     
                     // Update UI
                     this.updateWalletStatus();
@@ -1390,11 +1548,11 @@ Thank you for supporting indie game development! 🍄`;
                     // Show success message
                     alert(`✅ Wallet connected successfully!\n\nWallet: ${walletInfo.wallet}\nAddress: ${walletInfo.address}\n\nYou're ready to compete in the global leaderboard!`);
                     
-                    console.log('✅ Manual wallet connection successful:', walletInfo);
+                    console.log('✅ Wallet connection successful:', walletInfo);
                     
                 } catch (error) {
-                    console.error('❌ Manual wallet connection failed:', error);
-                    alert(`❌ Wallet connection failed!\n\nError: ${error.message}\n\nPlease make sure:\n• Your wallet is unlocked\n• You approve the connection request\n• Your wallet supports message signing`);
+                    console.error('❌ Wallet selection failed:', error);
+                    alert(`❌ Connection to ${walletType} failed!\n\nError: ${error.message}\n\nPlease try again or select a different wallet.`);
                 }
             }
 
@@ -1567,6 +1725,12 @@ Thank you for supporting indie game development! 🍄`;
         // Start when page loads
         // Global variable to access the game
         let game;
+
+        // Global function to close wallet modal
+        function closeWalletModal() {
+            document.getElementById('walletModal').style.display = 'none';
+            console.log('❌ Wallet selection modal closed');
+        }
         
         window.addEventListener('load', () => {
             console.log('🚀 Starting CHAMPIRUG...');
@@ -1579,5 +1743,16 @@ Thank you for supporting indie game development! 🍄`;
             }, 500);
         });
     </script>
+
+    <!-- Wallet Selection Modal -->
+    <div id="walletModal" class="wallet-modal">
+        <div class="wallet-modal-content">
+            <button class="wallet-close" onclick="closeWalletModal()">×</button>
+            <h3>🔗 Choose Your Bitcoin Wallet</h3>
+            <div id="walletButtonsContainer">
+                <!-- Wallet buttons will be inserted here -->
+            </div>
+        </div>
+    </div>
 </body>
 </html>
