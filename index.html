@@ -523,22 +523,44 @@
                     }, 2000);
                 }
                 
-                console.log('🔍 Wallet detection results:', {
+                // Enhanced debugging for Xverse detection
+                const allWindowKeys = Object.keys(window);
+                const walletKeys = allWindowKeys.filter(k => {
+                    const lowerKey = k.toLowerCase();
+                    return lowerKey.includes('uni') || 
+                           lowerKey.includes('xver') || 
+                           lowerKey.includes('bitcoin') || 
+                           lowerKey.includes('sats') ||
+                           lowerKey.includes('wallet') ||
+                           lowerKey.includes('provider');
+                });
+                
+                console.log('🔍 COMPLETE Wallet detection results:', {
                     unisat: !!window.unisat,
-                    xverseProviders: !!window.XverseProviders,
-                    bitcoinProvider: !!window.BitcoinProvider,
+                    XverseProviders: !!window.XverseProviders,
+                    'XverseProviders.BitcoinProvider': !!(window.XverseProviders && window.XverseProviders.BitcoinProvider),
+                    BitcoinProvider: !!window.BitcoinProvider,
                     xverse: !!window.xverse,
-                    xverseBitcoin: !!(window.Xverse && window.Xverse.bitcoin),
+                    Xverse: !!window.Xverse,
+                    'Xverse.bitcoin': !!(window.Xverse && window.Xverse.bitcoin),
                     sats: !!window.sats,
-                    walletKeys: Object.keys(window).filter(k => 
-                        k.toLowerCase().includes('uni') || 
-                        k.toLowerCase().includes('xver') || 
-                        k.toLowerCase().includes('bitcoin') || 
-                        k.toLowerCase().includes('sats') ||
-                        k.toLowerCase().includes('wallet')
-                    ),
+                    webln: !!window.webln,
+                    totalWindowKeys: allWindowKeys.length,
+                    walletRelatedKeys: walletKeys,
                     found: wallets.map(w => `${w.name} (${w.type})`)
                 });
+                
+                // Check for common Xverse properties that might exist
+                const xverseChecks = {
+                    'window.XverseProviders': window.XverseProviders,
+                    'window.XverseProviders?.BitcoinProvider': window.XverseProviders?.BitcoinProvider,
+                    'window.BitcoinProvider': window.BitcoinProvider,
+                    'window.xverse': window.xverse,
+                    'window.Xverse': window.Xverse,
+                    'window.sats': window.sats
+                };
+                
+                console.log('🟣 Xverse specific checks:', xverseChecks);
                 
                 return wallets;
             }
@@ -1711,7 +1733,24 @@ Thank you for supporting indie game development! 🍄`;
                     }
                     
                     if (availableWallets.length === 0) {
-                        alert('❌ No Bitcoin wallets found!\n\nPlease install:\n• Unisat Wallet (Chrome extension)\n• Xverse Wallet\n\nAfter installing, refresh the page and try again.');
+                        // Run diagnostic and show detailed info
+                        const diagnostic = diagnoseXverse();
+                        
+                        let message = '❌ No Bitcoin wallets detected!\n\n';
+                        message += '🔍 DIAGNOSTIC INFO:\n';
+                        message += `• Document ready: ${diagnostic.readyState}\n`;
+                        message += `• Found ${diagnostic.relevantKeys.length} wallet-related keys\n`;
+                        
+                        if (diagnostic.relevantKeys.length > 0) {
+                            message += `• Keys found: ${diagnostic.relevantKeys.join(', ')}\n\n`;
+                            message += '💡 Wallets might be detected but not properly injected.\n';
+                            message += 'Try:\n1. Refresh the page\n2. Wait a few seconds after page load\n3. Check browser console (F12)';
+                        } else {
+                            message += '\n📥 Please install:\n• Unisat Wallet (Chrome extension)\n• Xverse Wallet\n\nAfter installing, refresh the page.';
+                        }
+                        
+                        message += '\n\n🔬 Check browser console for detailed diagnostic info.';
+                        alert(message);
                         return;
                     }
 
@@ -2041,6 +2080,51 @@ Thank you for supporting indie game development! 🍄`;
             document.getElementById('walletModal').style.display = 'none';
             console.log('❌ Wallet selection modal closed');
         }
+
+        // Diagnostic function for Xverse detection
+        function diagnoseXverse() {
+            console.log('🔬 XVERSE DIAGNOSTIC START');
+            console.log('==========================');
+            
+            // Check all possible Xverse locations
+            const checks = {
+                'window.XverseProviders': typeof window.XverseProviders,
+                'window.XverseProviders?.BitcoinProvider': typeof window.XverseProviders?.BitcoinProvider,
+                'window.BitcoinProvider': typeof window.BitcoinProvider,
+                'window.xverse': typeof window.xverse,
+                'window.Xverse': typeof window.Xverse,
+                'window.Xverse?.bitcoin': typeof window.Xverse?.bitcoin,
+                'window.sats': typeof window.sats,
+                'window.webln': typeof window.webln
+            };
+            
+            Object.entries(checks).forEach(([key, type]) => {
+                console.log(`${key}: ${type}`);
+                if (type === 'object' && window[key.split('.')[1]]) {
+                    console.log(`  └─ Properties:`, Object.keys(window[key.split('.')[1]]));
+                }
+            });
+            
+            // Search for anything containing 'xverse' or 'bitcoin'
+            const allKeys = Object.keys(window);
+            const relevantKeys = allKeys.filter(k => 
+                k.toLowerCase().includes('xver') || 
+                k.toLowerCase().includes('bitcoin') ||
+                k.toLowerCase().includes('btc') ||
+                k.toLowerCase().includes('sats')
+            );
+            
+            console.log('🔍 All relevant window keys:', relevantKeys);
+            
+            // Check document for injection
+            console.log('📄 Document ready state:', document.readyState);
+            console.log('🌐 User agent:', navigator.userAgent);
+            
+            console.log('==========================');
+            console.log('🔬 XVERSE DIAGNOSTIC END');
+            
+            return {checks, relevantKeys, readyState: document.readyState};
+        }
         
         window.addEventListener('load', () => {
             console.log('🚀 Starting CHAMPIRUG...');
@@ -2051,6 +2135,23 @@ Thank you for supporting indie game development! 🍄`;
                 game.updateWalletStatus();
                 console.log('✅ Wallet status updated on page load');
             }, 500);
+            
+            // Periodic check for late-injected wallets
+            let checkCount = 0;
+            const walletChecker = setInterval(() => {
+                checkCount++;
+                const currentWallets = walletAuth.getAvailableWallets();
+                
+                if (currentWallets.length > 0) {
+                    console.log(`🔄 Wallets detected after ${checkCount} seconds:`, currentWallets.map(w => w.name));
+                    game.updateWalletStatus();
+                    clearInterval(walletChecker);
+                } else if (checkCount >= 10) {
+                    console.log('⏰ Stopped checking for wallets after 10 seconds');
+                    diagnoseXverse(); // Run final diagnostic
+                    clearInterval(walletChecker);
+                }
+            }, 1000);
         });
     </script>
 
