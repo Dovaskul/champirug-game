@@ -3,7 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Champirug - v4.3 Enhanced Wallet Selection</title>
+    <title>Champirug - v5.1 Enhanced Wallet Selection</title>
+    <link rel="icon" type="image/x-icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2280%22>🍄</text></svg>">
     <style>
         * {
             margin: 0;
@@ -383,6 +384,7 @@
         <!-- Leaderboard -->
         <div id="leaderboard" class="leaderboard">
             <h3>🏆 TOP 5 <span id="onlineIndicator" style="font-size: 0.8em; color: #90EE90;">🌐</span></h3>
+            <button onclick="resetLeaderboard()" style="background:#DC143C;color:white;border:none;padding:2px 5px;border-radius:3px;cursor:pointer;font-size:10px;margin-left:5px;" title="Reset Leaderboard">🗑️</button>
             <div id="leaderboardList">
                 <!-- Filled dynamically -->
             </div>
@@ -1132,6 +1134,16 @@
                     this.pollingInterval = null;
                     console.log('⏹️ Stopped polling');
                 }
+            }
+
+            // Reset leaderboard to default demo scores
+            resetLeaderboard() {
+                console.log('🗑️ Resetting leaderboard...');
+                localStorage.removeItem('champirug_global_scores');
+                this.onlineScores = [...MOCK_ONLINE_SCORES];
+                this.saveGlobalScores(this.onlineScores);
+                console.log('✅ Leaderboard reset to default scores');
+                return true;
             }
         }
 
@@ -2174,6 +2186,20 @@ Thank you for supporting indie game development! 🍄`;
                 xverseTests,
                 hasChrome: !!window.chrome
             };
+        }
+
+        // Function to reset leaderboard
+        function resetLeaderboard() {
+            if (confirm('¿Estás seguro de que quieres resetear el leaderboard? Esta acción no se puede deshacer.')) {
+                if (window.game && window.game.onlineLeaderboard) {
+                    window.game.onlineLeaderboard.resetLeaderboard();
+                    // Update display immediately
+                    window.game.updateLeaderboardDisplay();
+                    alert('✅ Leaderboard reseteado exitosamente!');
+                } else {
+                    alert('❌ Error: No se pudo acceder al sistema de leaderboard');
+                }
+            }
         }
 
         // Function to show diagnostic in user-friendly format
