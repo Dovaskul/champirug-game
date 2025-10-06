@@ -226,6 +226,24 @@
             transform: scale(1.05);
             box-shadow: 0 2px 8px rgba(147,112,219,0.4);
         }
+
+        /* Logout Button Styling */
+        #walletConnectBtn[style*="DC143C"] {
+            animation: logoutPulse 3s ease-in-out infinite;
+        }
+
+        #walletConnectBtn[style*="DC143C"]:hover {
+            background: #B22222 !important;
+        }
+
+        @keyframes logoutPulse {
+            0%, 100% { 
+                box-shadow: 0 0 0 0 rgba(220,20,60,0.4);
+            }
+            50% { 
+                box-shadow: 0 0 0 3px rgba(220,20,60,0.1);
+            }
+        }
         
         /* Animaciones */
         .player.jumping {
@@ -454,6 +472,14 @@
             // Check if wallet is connected
             isConnected() {
                 return !!(this.address && this.signature);
+            }
+
+            // Disconnect wallet
+            disconnect() {
+                this.connectedWallet = null;
+                this.address = null;
+                this.signature = null;
+                console.log('🔓 Wallet authentication cleared');
             }
         }
 
@@ -920,6 +946,36 @@
                 }
             }
 
+            // Disconnect wallet
+            disconnectWallet() {
+                try {
+                    console.log('🔓 Disconnecting wallet...');
+                    
+                    const wasConnected = walletAuth.isConnected();
+                    const walletName = walletAuth.connectedWallet;
+                    const address = walletAuth.address;
+                    
+                    // Disconnect wallet
+                    walletAuth.disconnect();
+                    
+                    // Clear stored wallet info
+                    localStorage.removeItem('champiWalletAddress');
+                    localStorage.removeItem('champiWalletType');
+                    
+                    // Update UI
+                    this.updateWalletStatus();
+                    
+                    if (wasConnected) {
+                        alert(`🔓 Wallet disconnected successfully!\n\nAddress: ${address}\nWallet: ${walletName || 'Unknown'}\n\nYou can reconnect anytime to compete in the global leaderboard.`);
+                        console.log('✅ Wallet disconnected successfully');
+                    }
+                    
+                } catch (error) {
+                    console.error('❌ Error disconnecting wallet:', error);
+                    alert(`❌ Error disconnecting wallet: ${error.message}`);
+                }
+            }
+
             // Show donation modal
             showDonation() {
                 const donationAddress = 'bc1p9vdlyxa2t4maf40rxjsnrrfu77gh96y4s4c9xhz60pq083q5c5dst60hxz';
@@ -1273,9 +1329,10 @@ Thank you for supporting indie game development! 🍄`;
                     this.walletStatusEl.style.color = '#90EE90';
                     
                     if (this.walletConnectBtn) {
-                        this.walletConnectBtn.innerHTML = '₿ Connected ✅';
-                        this.walletConnectBtn.style.background = '#32CD32';
-                        this.walletConnectBtn.disabled = true;
+                        this.walletConnectBtn.innerHTML = '🔓 Logout';
+                        this.walletConnectBtn.style.background = '#DC143C';
+                        this.walletConnectBtn.disabled = false;
+                        this.walletConnectBtn.onclick = () => this.disconnectWallet();
                     }
                 } else {
                     this.walletStatusEl.innerHTML = '🔑 Wallet: Not connected';
@@ -1285,6 +1342,7 @@ Thank you for supporting indie game development! 🍄`;
                         this.walletConnectBtn.innerHTML = '₿ Connect Wallet';
                         this.walletConnectBtn.style.background = '#FF8C00';
                         this.walletConnectBtn.disabled = false;
+                        this.walletConnectBtn.onclick = () => this.connectWallet();
                     }
                 }
             }
