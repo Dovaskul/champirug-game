@@ -644,37 +644,51 @@
                             // First, try to get addresses without parameters to force popup
                             console.log('📢 Attempting to trigger Xverse popup...');
                             
-                            // Method 1: Simple request that should trigger popup
+                            // Method 1: Check if response has error
                             try {
                                 const response = await window.XverseProviders.BitcoinProvider.request('getAddresses');
                                 console.log('📋 Simple request response:', response);
+                                
+                                if (response && response.error) {
+                                    console.log('⚠️ Xverse returned error:', response.error);
+                                    // This is the actual issue - Xverse needs user approval first!
+                                    throw new Error('User needs to approve connection in Xverse wallet');
+                                }
+                                
                                 if (response && response.addresses && response.addresses.length > 0) {
                                     addresses = response.addresses;
+                                } else if (response && response.result && response.result.addresses) {
+                                    addresses = response.result.addresses;
                                 }
                             } catch (simpleError) {
                                 console.log('⚠️ Simple request failed:', simpleError.message);
                                 
-                                // Method 2: Request with minimal parameters
+                                // The issue is that Xverse requires explicit user approval
+                                // We need to explain this to the user
+                                if (simpleError.message.includes('approval') || simpleError.message.includes('User')) {
+                                    throw new Error('Please open Xverse wallet and approve the connection request manually. Click the Xverse extension icon in your browser toolbar and look for a connection request.');
+                                }
+                                
+                                // Try alternative approach - maybe the wallet needs to be "activated" first
                                 try {
-                                    const response2 = await window.XverseProviders.BitcoinProvider.request('getAddresses', {
-                                        purposes: ['payment']
-                                    });
-                                    console.log('📋 Minimal params response:', response2);
-                                    if (response2 && response2.addresses && response2.addresses.length > 0) {
-                                        addresses = response2.addresses;
+                                    // Some wallets need a "connect" call first
+                                    if (window.XverseProviders.BitcoinProvider.connect) {
+                                        console.log('🔗 Trying to connect first...');
+                                        await window.XverseProviders.BitcoinProvider.connect();
+                                        
+                                        // Now try getting addresses
+                                        const response2 = await window.XverseProviders.BitcoinProvider.request('getAddresses');
+                                        console.log('📋 Post-connect response:', response2);
+                                        
+                                        if (response2 && !response2.error && response2.addresses) {
+                                            addresses = response2.addresses;
+                                        } else if (response2 && response2.result && response2.result.addresses) {
+                                            addresses = response2.result.addresses;
+                                        }
                                     }
-                                } catch (minimalError) {
-                                    console.log('⚠️ Minimal params failed:', minimalError.message);
-                                    
-                                    // Method 3: Request with full parameters but different message
-                                    const response3 = await window.XverseProviders.BitcoinProvider.request('getAddresses', {
-                                        purposes: ['payment', 'ordinals'],
-                                        message: 'Connect your wallet to play Champirug!'
-                                    });
-                                    console.log('📋 Full params response:', response3);
-                                    if (response3 && response3.addresses && response3.addresses.length > 0) {
-                                        addresses = response3.addresses;
-                                    }
+                                } catch (connectError) {
+                                    console.log('⚠️ Connect method also failed:', connectError.message);
+                                    throw new Error('Unable to connect to Xverse. Please make sure:\n1. Xverse wallet is unlocked\n2. Click the Xverse icon in your browser\n3. Approve any pending connection requests\n4. Refresh the page and try again');
                                 }
                             }
                         } catch (e) {
@@ -1233,6 +1247,16 @@
 
                 // Controles de mouse/touch
                 this.container.addEventListener('click', (e) => {
+                    // Don't start game if clicking on buttons or UI elements
+                    if (e.target.tagName === 'BUTTON' || 
+                        e.target.closest('button') || 
+                        e.target.closest('.leaderboard') ||
+                        e.target.closest('.instructions') ||
+                        e.target.closest('.wallet-modal') ||
+                        e.target.closest('#gameOver')) {
+                        return; // Don't start game
+                    }
+                    
                     e.preventDefault();
                     if (!this.isRunning) {
                         this.handleStart();
