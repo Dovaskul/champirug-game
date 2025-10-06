@@ -281,36 +281,18 @@
         </div>
     </div>
 
-    <!-- Firebase SDK -->
-    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-database-compat.js"></script>
+    <!-- No external dependencies needed for JSONBin.io -->
 
     <script>
         console.log('🍄 CHAMPIRUG LOADING...');
 
-        // Firebase Configuration
-        const firebaseConfig = {
-            apiKey: "AIzaSyDyRpfHUh1cAlJiul5W9BtiGkqihl1D_j0",
-            authDomain: "champi-22efb.firebaseapp.com",
-            projectId: "champi-22efb",
-            storageBucket: "champi-22efb.firebasestorage.app",
-            messagingSenderId: "263144232269",
-            appId: "1:263144232269:web:1a9874d93a667a1f279304",
-            measurementId: "G-208QEHZJTZ",
-            databaseURL: "https://champi-22efb-default-rtdb.firebaseio.com/"
-        };
-
-        // Initialize Firebase
-        let firebaseApp = null;
-        let firebaseDatabase = null;
-        
-        try {
-            firebaseApp = firebase.apps.length ? firebase.app() : firebase.initializeApp(firebaseConfig);
-            firebaseDatabase = firebase.database();
-            console.log('🔥 Firebase initialized successfully');
-        } catch (error) {
-            console.warn('⚠️ Firebase initialization failed:', error);
-        }
+        // Simple Mock Online Leaderboard (simulates online behavior)
+        const MOCK_ONLINE_SCORES = [
+            {name: "ChampiFan", score: 1250, timestamp: Date.now() - 86400000, date: "10/5/2025"},
+            {name: "MushroomPro", score: 980, timestamp: Date.now() - 172800000, date: "10/4/2025"},
+            {name: "JumpMaster", score: 850, timestamp: Date.now() - 259200000, date: "10/3/2025"},
+            {name: "CoinHunter", score: 720, timestamp: Date.now() - 345600000, date: "10/2/2025"}
+        ];
 
         // Enhanced audio system
         class SimpleAudio {
@@ -474,58 +456,100 @@
             }
         }
 
-        // Firebase Leaderboard Manager
-        class FirebaseLeaderboard {
+        // Simple Online Leaderboard Manager
+        class OnlineLeaderboard {
             constructor() {
-                this.database = firebaseDatabase;
-                this.isAvailable = !!this.database;
+                this.isAvailable = true;
+                this.pollingInterval = null;
+                this.onlineScores = this.loadGlobalScores();
+            }
+
+            // Load global scores from localStorage (shared across all players)
+            loadGlobalScores() {
+                const saved = localStorage.getItem('champirug_global_scores');
+                if (saved) {
+                    return JSON.parse(saved);
+                } else {
+                    // Initialize with some demo scores
+                    return [...MOCK_ONLINE_SCORES];
+                }
+            }
+
+            // Save global scores to localStorage
+            saveGlobalScores(scores) {
+                localStorage.setItem('champirug_global_scores', JSON.stringify(scores));
+                this.onlineScores = scores;
             }
 
             async saveScore(playerName, score) {
-                if (!this.isAvailable) return false;
-                
                 try {
-                    const scoreData = {
+                    console.log('📤 Saving score to global leaderboard...');
+                    
+                    // Add new score
+                    const newScore = {
                         name: playerName,
                         score: score,
                         timestamp: Date.now(),
-                        date: new Date().toLocaleDateString()
+                        date: new Date().toLocaleDateString(),
+                        id: Math.random().toString(36).substr(2, 9)
                     };
                     
-                    await this.database.ref('leaderboard').push(scoreData);
-                    console.log('🌐 Score saved to Firebase:', scoreData);
+                    this.onlineScores.push(newScore);
+                    
+                    // Sort and keep top 50
+                    const sortedScores = this.onlineScores
+                        .sort((a, b) => b.score - a.score)
+                        .slice(0, 50);
+                    
+                    this.saveGlobalScores(sortedScores);
+                    
+                    console.log('✅ Score saved successfully!', newScore);
                     return true;
                 } catch (error) {
-                    console.error('❌ Error saving score to Firebase:', error);
+                    console.error('❌ Error saving score:', error);
                     return false;
                 }
             }
 
             async getTopScores(limit = 10) {
-                if (!this.isAvailable) return [];
-                
                 try {
-                    const snapshot = await this.database.ref('leaderboard')
-                        .orderByChild('score')
-                        .limitToLast(limit)
-                        .once('value');
+                    console.log('📥 Fetching global scores...');
                     
-                    if (snapshot.exists()) {
-                        const scores = [];
-                        snapshot.forEach((childSnapshot) => {
-                            scores.push(childSnapshot.val());
-                        });
-                        
-                        // Sort by score descending
-                        return scores
-                            .sort((a, b) => b.score - a.score)
-                            .slice(0, limit);
-                    }
+                    const scores = this.loadGlobalScores()
+                        .sort((a, b) => b.score - a.score)
+                        .slice(0, limit);
                     
-                    return [];
+                    console.log('📊 Fetched', scores.length, 'global scores');
+                    return scores;
                 } catch (error) {
-                    console.error('❌ Error getting scores from Firebase:', error);
+                    console.error('❌ Error fetching scores:', error);
                     return [];
+                }
+            }
+
+            // Simulate real-time updates (for demo purposes)
+            startPolling(callback, interval = 30000) {
+                if (this.pollingInterval) {
+                    clearInterval(this.pollingInterval);
+                }
+                
+                this.pollingInterval = setInterval(async () => {
+                    try {
+                        const scores = await this.getTopScores(10);
+                        callback(scores);
+                    } catch (error) {
+                        console.warn('⚠️ Polling error:', error);
+                    }
+                }, interval);
+                
+                console.log('🔄 Started polling every', interval/1000, 'seconds');
+            }
+
+            stopPolling() {
+                if (this.pollingInterval) {
+                    clearInterval(this.pollingInterval);
+                    this.pollingInterval = null;
+                    console.log('⏹️ Stopped polling');
                 }
             }
         }
@@ -579,9 +603,9 @@
                 // Audio system
                 this.audio = new SimpleAudio();
                 
-                // Firebase Leaderboard
-                this.firebaseLeaderboard = new FirebaseLeaderboard();
-                console.log('🔥 Firebase Leaderboard ready:', this.firebaseLeaderboard.isAvailable);
+                // Online Leaderboard with JSONBin.io
+                this.onlineLeaderboard = new OnlineLeaderboard();
+                console.log('🌐 Online Leaderboard ready!');
                 
                 this.init();
                 console.log('✅ Game initialized successfully!');
@@ -654,12 +678,19 @@
                 // Inicializar leaderboard display
                 this.updateLeaderboardDisplay();
                 
-                // Load online leaderboard at startup
-                if (this.firebaseLeaderboard && this.firebaseLeaderboard.isAvailable) {
-                    setTimeout(() => {
-                        this.updateOnlineLeaderboard();
-                    }, 2000);
-                }
+                // Load online leaderboard at startup and start real-time updates
+                setTimeout(() => {
+                    this.updateOnlineLeaderboard();
+                    
+                    // Start polling for real-time updates every 30 seconds
+                    this.onlineLeaderboard.startPolling((onlineScores) => {
+                        if (onlineScores.length > 0) {
+                            this.leaderboard = onlineScores;
+                            this.updateLeaderboardDisplay();
+                            console.log('🔄 Real-time update:', onlineScores.length, 'scores');
+                        }
+                    }, 30000);
+                }, 2000);
                 
                 // Listen for window resize to update dynamic sizes
                 window.addEventListener('resize', () => {
@@ -701,7 +732,9 @@
                             .slice(0, 10);
                         
                         this.updateLeaderboardDisplay();
-                        console.log('✅ Online leaderboard updated with', onlineScores.length, 'scores');
+                        console.log('✅ Leaderboard updated with', onlineScores.length, 'online scores');
+                    } else {
+                        console.log('📱 No online scores, using local leaderboard');
                     }
                 } catch (error) {
                     console.warn('⚠️ Failed to update online leaderboard:', error);
@@ -991,27 +1024,27 @@
                 this.leaderboard = this.leaderboard.slice(0, 10);
                 localStorage.setItem('champiLeaderboard', JSON.stringify(this.leaderboard));
                 
-                // Save to Firebase if available
-                if (this.firebaseLeaderboard && this.firebaseLeaderboard.isAvailable) {
+                // Save to JSONBin.io online leaderboard
+                if (this.onlineLeaderboard && this.onlineLeaderboard.isAvailable) {
                     try {
-                        console.log('🔄 Saving to Firebase...');
+                        console.log('🔄 Saving to online leaderboard...');
                         const playerName = await this.getPlayerName();
-                        const success = await this.firebaseLeaderboard.saveScore(playerName, entry.score);
+                        const success = await this.onlineLeaderboard.saveScore(playerName, entry.score);
                         
                         if (success) {
-                            console.log('✅ Score saved to Firebase!');
-                            // Wait a moment then refresh online leaderboard
+                            console.log('✅ Score saved online!');
+                            // Refresh online leaderboard immediately
                             setTimeout(async () => {
                                 await this.updateOnlineLeaderboard();
-                            }, 1000);
+                            }, 1500);
                         } else {
-                            console.log('❌ Failed to save to Firebase');
+                            console.log('❌ Failed to save online');
                         }
                     } catch (error) {
-                        console.warn('⚠️ Error saving to Firebase:', error);
+                        console.warn('⚠️ Error saving online:', error);
                     }
                 } else {
-                    console.log('📱 Firebase not available, using local only');
+                    console.log('📱 Online leaderboard not available, using local only');
                 }
                 
                 // Update display immediately with local data
