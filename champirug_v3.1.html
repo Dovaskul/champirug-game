@@ -233,7 +233,6 @@
             <div>⏰ Time: <span id="time">0</span>s</div>
             <div>🏆 Best: <span id="highScore">0</span></div>
             <div id="jumpStatus">🔄 Status: Waiting...</div>
-            <div id="walletStatus" style="font-size: 12px; opacity: 0.8;">🔑 Wallet: Not connected</div>
             <div><button onclick="game.audio.toggleMute()" style="background:#FFD700;border:none;padding:5px;border-radius:3px;cursor:pointer;">🔊 Music</button></div>
         </div>
 
@@ -264,10 +263,6 @@
             <p>🐻 Avoid the bears</p>
             <p>🪙 Collect the coins</p>
             <br>
-            <p><strong>🔑 LEADERBOARD:</strong></p>
-            <p>🚀 Connect Bitcoin wallet (Unisat/Xverse)</p>
-            <p>🌐 Compete globally with wallet auth</p>
-            <br>
             <p><strong style="color: #FFD700;">Press SPACE to start!</strong></p>
         </div>
 
@@ -291,140 +286,12 @@
     <script>
         console.log('🍄 CHAMPIRUG LOADING...');
 
-        // Bitcoin Wallet Authentication
-        class BitcoinWalletAuth {
-            constructor() {
-                this.connectedWallet = null;
-                this.address = null;
-                this.signature = null;
-            }
-
-            // Check which wallets are available
-            getAvailableWallets() {
-                const wallets = [];
-                if (window.unisat) {
-                    wallets.push({ name: 'Unisat', provider: window.unisat, type: 'unisat' });
-                }
-                if (window.XverseProviders?.BitcoinProvider) {
-                    wallets.push({ name: 'Xverse', provider: window.XverseProviders.BitcoinProvider, type: 'xverse' });
-                }
-                return wallets;
-            }
-
-            // Connect to a wallet
-            async connectWallet(walletType = 'auto') {
-                try {
-                    const availableWallets = this.getAvailableWallets();
-                    
-                    if (availableWallets.length === 0) {
-                        throw new Error('No Bitcoin wallets found. Please install Unisat or Xverse.');
-                    }
-
-                    let wallet;
-                    if (walletType === 'auto' || !walletType) {
-                        wallet = availableWallets[0]; // Use first available
-                    } else {
-                        wallet = availableWallets.find(w => w.type === walletType);
-                        if (!wallet) {
-                            wallet = availableWallets[0];
-                        }
-                    }
-
-                    console.log('🔗 Connecting to', wallet.name, 'wallet...');
-
-                    if (wallet.type === 'unisat') {
-                        return await this.connectUnisat(wallet.provider);
-                    } else if (wallet.type === 'xverse') {
-                        return await this.connectXverse(wallet.provider);
-                    }
-                } catch (error) {
-                    console.error('❌ Wallet connection failed:', error);
-                    throw error;
-                }
-            }
-
-            // Connect to Unisat wallet
-            async connectUnisat(unisat) {
-                try {
-                    const accounts = await unisat.requestAccounts();
-                    if (accounts.length === 0) {
-                        throw new Error('No accounts found in Unisat wallet');
-                    }
-
-                    this.address = accounts[0];
-                    this.connectedWallet = 'unisat';
-
-                    // Sign authentication message
-                    const message = `Champirug Game Authentication\nWallet: ${this.address}\nTime: ${new Date().toISOString()}`;
-                    this.signature = await unisat.signMessage(message);
-
-                    console.log('✅ Unisat wallet connected:', this.address);
-                    return {
-                        address: this.address,
-                        wallet: 'Unisat',
-                        signature: this.signature
-                    };
-                } catch (error) {
-                    console.error('❌ Unisat connection failed:', error);
-                    throw error;
-                }
-            }
-
-            // Connect to Xverse wallet
-            async connectXverse(xverse) {
-                try {
-                    const response = await xverse.request('getAddresses', {});
-                    if (!response.result || response.result.addresses.length === 0) {
-                        throw new Error('No addresses found in Xverse wallet');
-                    }
-
-                    // Use the first payment address
-                    const paymentAddress = response.result.addresses.find(addr => addr.type === 'payment');
-                    this.address = paymentAddress ? paymentAddress.address : response.result.addresses[0].address;
-                    this.connectedWallet = 'xverse';
-
-                    // Sign authentication message
-                    const message = `Champirug Game Authentication\nWallet: ${this.address}\nTime: ${new Date().toISOString()}`;
-                    const signResponse = await xverse.request('signMessage', {
-                        address: this.address,
-                        message: message
-                    });
-
-                    this.signature = signResponse.result;
-
-                    console.log('✅ Xverse wallet connected:', this.address);
-                    return {
-                        address: this.address,
-                        wallet: 'Xverse',
-                        signature: this.signature
-                    };
-                } catch (error) {
-                    console.error('❌ Xverse connection failed:', error);
-                    throw error;
-                }
-            }
-
-            // Get display name for address (truncated)
-            getDisplayName() {
-                if (!this.address) return 'Anonymous';
-                return `${this.address.substring(0, 6)}...${this.address.substring(this.address.length - 4)}`;
-            }
-
-            // Check if wallet is connected
-            isConnected() {
-                return !!(this.address && this.signature);
-            }
-        }
-
-        // Initialize wallet auth
-        const walletAuth = new BitcoinWalletAuth();
-
-        // Mock scores with some wallet addresses
+        // Simple Mock Online Leaderboard (simulates online behavior)
         const MOCK_ONLINE_SCORES = [
-            {name: "bc1q7x...8a2f", score: 1250, timestamp: Date.now() - 86400000, date: "10/5/2025", wallet: "Unisat"},
-            {name: "3FxY9...kL8m", score: 980, timestamp: Date.now() - 172800000, date: "10/4/2025", wallet: "Xverse"},
-            {name: "1A8z3...9dR6", score: 850, timestamp: Date.now() - 259200000, date: "10/3/2025", wallet: "Unisat"},
-            {name: "bc1q2...7n5k", score: 720, timestamp: Date.now() - 345600000, date: "10/2/2025", wallet: "Xverse"}
+            {name: "ChampiFan", score: 1250, timestamp: Date.now() - 86400000, date: "10/5/2025"},
+            {name: "MushroomPro", score: 980, timestamp: Date.now() - 172800000, date: "10/4/2025"},
+            {name: "JumpMaster", score: 850, timestamp: Date.now() - 259200000, date: "10/3/2025"},
+            {name: "CoinHunter", score: 720, timestamp: Date.now() - 345600000, date: "10/2/2025"}
         ];
 
         // Enhanced audio system
@@ -706,7 +573,6 @@
                 this.finalScoreEl = document.getElementById('finalScore');
                 this.finalTimeEl = document.getElementById('finalTime');
                 this.jumpStatusEl = document.getElementById('jumpStatus');
-                this.walletStatusEl = document.getElementById('walletStatus');
                 this.leaderboardEl = document.getElementById('leaderboardList');
                 this.gameOverLeaderboardEl = document.getElementById('gameOverLeaderboard');
 
@@ -1151,14 +1017,12 @@
 
             async addToLeaderboard(entry) {
                 console.log('📝 Adding score to leaderboard:', entry);
-                console.log('📊 Current leaderboard before adding:', this.leaderboard.length, 'entries');
                 
                 // Add to local leaderboard first
                 this.leaderboard.push(entry);
                 this.leaderboard.sort((a, b) => b.score - a.score);
                 this.leaderboard = this.leaderboard.slice(0, 10);
                 localStorage.setItem('champiLeaderboard', JSON.stringify(this.leaderboard));
-                console.log('✅ Added to local leaderboard, now has:', this.leaderboard.length, 'entries');
                 
                 // Save to JSONBin.io online leaderboard
                 if (this.onlineLeaderboard && this.onlineLeaderboard.isAvailable) {
@@ -1185,64 +1049,16 @@
                 
                 // Update display immediately with local data
                 this.updateLeaderboardDisplay();
-                
-                // Update wallet status display
-                this.updateWalletStatus();
             }
 
-            // Update wallet status in UI
-            updateWalletStatus() {
-                if (!this.walletStatusEl) return;
-                
-                if (walletAuth.isConnected()) {
-                    this.walletStatusEl.innerHTML = `🔑 Wallet: ${walletAuth.getDisplayName()} ✅`;
-                    this.walletStatusEl.style.color = '#90EE90';
-                } else {
-                    this.walletStatusEl.innerHTML = '🔑 Wallet: Not connected';
-                    this.walletStatusEl.style.color = '#999';
-                }
-            }
-
-            // Get player identity using Bitcoin wallet
+            // Get player name for online leaderboard
             async getPlayerName() {
-                try {
-                    // Check if wallet is already connected
-                    if (walletAuth.isConnected()) {
-                        console.log('🔗 Using connected wallet:', walletAuth.getDisplayName());
-                        return walletAuth.getDisplayName();
-                    }
-
-                    // Show wallet connection dialog
-                    const useWallet = confirm('🚀 Connect your Bitcoin wallet for authentication?\n\n✅ Unisat or Xverse supported\n✅ No personal data required\n✅ Just sign to verify wallet ownership\n\nClick OK to connect wallet, or Cancel to enter name manually.');
-
-                    if (useWallet) {
-                        const walletInfo = await walletAuth.connectWallet();
-                        console.log('✅ Wallet authenticated:', walletInfo);
-                        
-                        // Store wallet info
-                        localStorage.setItem('champiWalletAddress', walletInfo.address);
-                        localStorage.setItem('champiWalletType', walletInfo.wallet);
-                        
-                        return walletAuth.getDisplayName();
-                    } else {
-                        // Fallback to manual name entry
-                        return await this.getManualPlayerName();
-                    }
-                } catch (error) {
-                    console.warn('⚠️ Wallet authentication failed:', error);
-                    
-                    // Show error and fallback to manual
-                    alert(`❌ Wallet connection failed: ${error.message}\n\nFalling back to manual name entry.`);
-                    return await this.getManualPlayerName();
-                }
-            }
-
-            // Fallback manual name entry
-            async getManualPlayerName() {
+                // Check if name is stored
                 let playerName = localStorage.getItem('champiPlayerName');
                 
                 if (!playerName) {
-                    playerName = prompt('🏆 Enter your name for the leaderboard:') || 'Anonymous';
+                    playerName = prompt('🏆 Enter your name for the online leaderboard:') || 'Anonymous';
+                    // Clean and validate name
                     playerName = playerName.trim().substring(0, 20) || 'Anonymous';
                     localStorage.setItem('champiPlayerName', playerName);
                 }
@@ -1251,21 +1067,13 @@
             }
 
             updateLeaderboardDisplay() {
-                console.log('🖥️ Updating leaderboard display...');
-                console.log('📊 Current leaderboard:', this.leaderboard);
-                
-                if (!this.leaderboardEl) {
-                    console.warn('❌ Leaderboard element not found!');
-                    return;
-                }
+                if (!this.leaderboardEl) return;
                 
                 this.leaderboardEl.innerHTML = '';
                 const top5 = this.leaderboard.slice(0, 5);
-                console.log('🏆 Top 5 scores:', top5);
                 
                 if (top5.length === 0) {
                     this.leaderboardEl.innerHTML = '<div style="opacity:0.6;">No scores yet</div>';
-                    console.log('📝 No scores to display');
                     return;
                 }
                 
@@ -1273,18 +1081,14 @@
                     const div = document.createElement('div');
                     div.className = 'leaderboard-entry';
                     
-                    // Show player name/wallet if available (online score) or date (local score)
+                    // Show player name if available (online score) or date (local score)
                     const displayInfo = entry.name ? 
                         `${entry.name.substring(0, 10)}` : 
                         entry.date || 'Local';
                     
-                    // Add wallet indicator for addresses
-                    const isWalletAddress = entry.name && (entry.name.includes('...') || entry.wallet);
-                    const walletIcon = isWalletAddress ? '₿' : '🌐';
-                    
                     div.innerHTML = `
-                        <span>${index + 1}. ${entry.score}${entry.name ? ' ' + walletIcon : ''}</span>
-                        <span style="font-size: 0.9em;">${displayInfo}${entry.wallet ? ' ' + entry.wallet : ''}</span>
+                        <span>${index + 1}. ${entry.score}${entry.name ? ' 🌐' : ''}</span>
+                        <span style="font-size: 0.9em;">${displayInfo}</span>
                     `;
                     this.leaderboardEl.appendChild(div);
                 });
