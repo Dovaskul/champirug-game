@@ -1,0 +1,1758 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Champirug - v4.3 Enhanced Wallet Selection</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            background: #87CEEB;
+            font-family: 'Courier New', monospace;
+            overflow: hidden;
+        }
+        
+        #gameContainer {
+            position: relative;
+            width: 100vw;
+            height: 100vh;
+            max-width: 1200px;
+            max-height: 800px;
+            margin: 0 auto;
+            background: linear-gradient(to bottom, #87CEEB 70%, #32CD32 70%);
+            border: 3px solid #000;
+            box-sizing: border-box;
+            overflow: hidden;
+        }
+        
+        /* CHAMPIÑÓN USANDO SPRITE PERSONALIZADO */
+        .player {
+            position: absolute;
+            width: min(8vw, 8vh, 80px);
+            height: min(8vw, 8vh, 80px);
+            bottom: 0px;
+            left: 80px;
+            z-index: 100;
+            
+            background-image: url('sprites/champi1.png');
+            background-size: contain;
+            background-repeat: no-repeat;
+            background-position: center;
+            
+            /* Mantener proporciones y hacer responsive */
+            max-width: 80px;
+            max-height: 80px;
+            min-width: 40px;
+            min-height: 40px;
+        }
+        
+        /* OSO USANDO SPRITE PERSONALIZADO */
+        .simple-enemy {
+            position: absolute;
+            width: min(7vw, 7vh, 70px);
+            height: min(7vw, 7vh, 70px);
+            bottom: 0px;
+            z-index: 10;
+            
+            background-image: url('sprites/bear1.png');
+            background-size: contain;
+            background-repeat: no-repeat;
+            background-position: center;
+            
+            /* Mantener proporciones y hacer responsive */
+            max-width: 70px;
+            max-height: 70px;
+            min-width: 35px;
+            min-height: 35px;
+        }
+        
+        /* BITCOIN USANDO EMOJI CON TAMAÑO DINÁMICO */
+        .simple-bitcoin {
+            position: absolute;
+            width: min(5vw, 5vh, 50px);
+            height: min(5vw, 5vh, 50px);
+            z-index: 5;
+            
+            font-size: min(4vw, 4vh, 40px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            
+            /* Mantener proporciones y hacer responsive */
+            max-width: 50px;
+            max-height: 50px;
+            min-width: 25px;
+            min-height: 25px;
+        }
+        
+        .simple-bitcoin::before {
+            content: '🪙';
+        }
+        
+        /* UI PANELS */
+        .ui-panel {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            background: rgba(0,0,0,0.8);
+            color: white;
+            padding: 15px;
+            border-radius: 8px;
+            font-size: 18px;
+            font-family: 'Courier New', monospace;
+        }
+        
+        .instructions {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0,0,0,0.95);
+            color: white;
+            padding: 30px;
+            border-radius: 15px;
+            text-align: center;
+            border: 3px solid #FFD700;
+            font-size: 18px;
+        }
+        
+        .game-over {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(255,0,0,0.95);
+            color: white;
+            padding: 30px;
+            border-radius: 15px;
+            text-align: center;
+            border: 3px solid #FFF;
+            display: none;
+            font-size: 18px;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+
+        .restart-button {
+            background: #FFD700;
+            color: #000;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            margin: 10px 5px;
+            font-family: 'Courier New', monospace;
+            transition: all 0.3s;
+        }
+
+        .restart-button:hover {
+            background: #FFA500;
+            transform: scale(1.05);
+        }
+
+        .leaderboard {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: rgba(0,0,0,0.8);
+            color: white;
+            padding: 15px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-family: 'Courier New', monospace;
+            max-width: 250px;
+        }
+
+        .leaderboard h3 {
+            margin: 0 0 10px 0;
+            color: #FFD700;
+            text-align: center;
+        }
+
+        .leaderboard-entry {
+            display: flex;
+            justify-content: space-between;
+            margin: 5px 0;
+            padding: 3px 8px;
+            border-bottom: 1px solid #333;
+            gap: 15px;
+        }
+
+        .leaderboard-entry:last-child {
+            border-bottom: none;
+        }
+
+        .leaderboard-entry.current {
+            color: #FFD700;
+            font-weight: bold;
+        }
+
+        /* Wallet Connect Button Animation */
+        #walletConnectBtn {
+            animation: walletPulse 2s ease-in-out infinite;
+            font-weight: bold;
+            text-shadow: 0 0 2px rgba(0,0,0,0.3);
+        }
+
+        #walletConnectBtn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 2px 8px rgba(255,140,0,0.3);
+        }
+
+        @keyframes walletPulse {
+            0%, 100% { 
+                box-shadow: 0 0 0 0 rgba(255,140,0,0.4);
+            }
+            50% { 
+                box-shadow: 0 0 0 4px rgba(255,140,0,0.1);
+            }
+        }
+
+        /* Donate Button Styling */
+        button[onclick*="showDonation"] {
+            transition: all 0.3s ease;
+            font-weight: bold;
+        }
+
+        button[onclick*="showDonation"]:hover {
+            background: #8A2BE2 !important;
+            transform: scale(1.05);
+            box-shadow: 0 2px 8px rgba(147,112,219,0.4);
+        }
+
+        /* Logout Button Styling */
+        #walletConnectBtn[style*="DC143C"] {
+            animation: logoutPulse 3s ease-in-out infinite;
+        }
+
+        #walletConnectBtn[style*="DC143C"]:hover {
+            background: #B22222 !important;
+        }
+
+        @keyframes logoutPulse {
+            0%, 100% { 
+                box-shadow: 0 0 0 0 rgba(220,20,60,0.4);
+            }
+            50% { 
+                box-shadow: 0 0 0 3px rgba(220,20,60,0.1);
+            }
+        }
+
+        /* Wallet Selection Modal */
+        .wallet-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.8);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 10000;
+            font-family: 'Courier New', monospace;
+        }
+
+        .wallet-modal-content {
+            background: #fff;
+            padding: 30px;
+            border-radius: 15px;
+            text-align: center;
+            max-width: 400px;
+            width: 90%;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        }
+
+        .wallet-modal h3 {
+            margin: 0 0 20px 0;
+            color: #333;
+            font-size: 18px;
+        }
+
+        .wallet-button {
+            display: inline-block;
+            margin: 10px;
+            padding: 15px 20px;
+            background: #f8f9fa;
+            border: 2px solid #dee2e6;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            min-width: 140px;
+        }
+
+        .wallet-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+
+        .wallet-button.unisat {
+            border-color: #FF8C00;
+            background: linear-gradient(135deg, #FFF5E6, #FFE4B3);
+        }
+
+        .wallet-button.unisat:hover {
+            border-color: #FF8C00;
+            background: linear-gradient(135deg, #FFE4B3, #FFD700);
+        }
+
+        .wallet-button.xverse {
+            border-color: #8A2BE2;
+            background: linear-gradient(135deg, #F3E5F5, #E1BEE7);
+        }
+
+        .wallet-button.xverse:hover {
+            border-color: #8A2BE2;
+            background: linear-gradient(135deg, #E1BEE7, #DDA0DD);
+        }
+
+        .wallet-logo {
+            font-size: 24px;
+            display: block;
+            margin-bottom: 8px;
+        }
+
+        .wallet-close {
+            position: absolute;
+            top: 10px;
+            right: 15px;
+            background: none;
+            border: none;
+            font-size: 20px;
+            cursor: pointer;
+            color: #666;
+        }
+        
+        /* Animaciones */
+        .player.jumping {
+            animation: jump 0.3s ease-out;
+        }
+        
+        @keyframes jump {
+            0% { transform: rotate(0deg) scale(1); }
+            50% { transform: rotate(10deg) scale(1.1); }
+            100% { transform: rotate(0deg) scale(1); }
+        }
+        
+        .simple-enemy {
+            animation: enemyWalk 1s ease-in-out infinite;
+        }
+        
+        @keyframes enemyWalk {
+            0%, 100% { transform: rotate(-5deg); }
+            50% { transform: rotate(5deg); }
+        }
+        
+        .simple-bitcoin {
+            animation: bitcoinSpin 2s linear infinite;
+        }
+        
+        @keyframes bitcoinSpin {
+            0% { transform: rotate(0deg) scale(1); }
+            50% { transform: rotate(180deg) scale(1.1); }
+            100% { transform: rotate(360deg) scale(1); }
+        }
+    </style>
+</head>
+<body>
+    <div id="gameContainer">
+        <!-- UI Panel -->
+        <div class="ui-panel">
+            <div>🍄 Score: <span id="score">0</span></div>
+            <div>⏰ Time: <span id="time">0</span>s</div>
+            <div>🏆 Best: <span id="highScore">0</span></div>
+            <div id="jumpStatus">🔄 Status: Waiting...</div>
+            <div id="walletStatus" style="font-size: 12px; opacity: 0.8;">🔑 Wallet: Not connected</div>
+            <div>
+                <button onclick="game.audio.toggleMute()" style="background:#FFD700;border:none;padding:5px;border-radius:3px;cursor:pointer;margin-right:5px;">🔊 Music</button>
+                <button id="walletConnectBtn" onclick="game.connectWallet()" style="background:#FF8C00;border:none;padding:5px;border-radius:3px;cursor:pointer;font-size:11px;margin-right:5px;">₿ Connect Wallet</button>
+                <button onclick="game.showDonation()" style="background:#9370DB;border:none;padding:5px;border-radius:3px;cursor:pointer;font-size:11px;">💜 Donate</button>
+            </div>
+        </div>
+
+        <!-- Leaderboard -->
+        <div id="leaderboard" class="leaderboard">
+            <h3>🏆 TOP 5 <span id="onlineIndicator" style="font-size: 0.8em; color: #90EE90;">🌐</span></h3>
+            <div id="leaderboardList">
+                <!-- Filled dynamically -->
+            </div>
+        </div>
+
+        <!-- Player -->
+        <div id="player" class="player"></div>
+
+        <!-- Instructions -->
+        <div id="instructions" class="instructions">
+            <h1>🍄 CHAMPIRUG 🍄</h1>
+            <h2>The Controllable Mushroom!</h2>
+            <br>
+            <p><strong>🎮 CONTROLS:</strong></p>
+            <p>⬆️ UP ARROW = Move Up</p>
+            <p>⬇️ DOWN ARROW = Move Down</p>
+            <p>⬅️ LEFT ARROW = Move Left</p>
+            <p>➡️ RIGHT ARROW = Move Right</p>
+            <p>SPACE = Start Game</p>
+            <br>
+            <p><strong>🎯 OBJECTIVE:</strong></p>
+            <p>🐻 Avoid the bears</p>
+            <p>🪙 Collect the coins</p>
+            <br>
+            <p><strong>🔑 BITCOIN WALLET AUTH:</strong></p>
+            <p>₿ Click <span style="color:#FF8C00;">Connect Wallet</span> button above</p>
+            <p>🚀 Supports Unisat & Xverse wallets</p>
+            <p>🌐 Compete globally with crypto identity</p>
+            <br>
+            <p><strong>💜 SUPPORT DEVELOPMENT:</strong></p>
+            <p>💜 Click <span style="color:#9370DB;">Donate</span> button (you will receive nothing)</p>
+            <br>
+            <p><strong style="color: #FFD700;">Press SPACE to start!</strong></p>
+        </div>
+
+        <!-- Game Over -->
+        <div id="gameOver" class="game-over">
+            <h1>💀 GAME OVER 💀</h1>
+            <br>
+            <p>Final Score: <span id="finalScore">0</span></p>
+            <p>Time: <span id="finalTime">0</span>s</p>
+            <div id="gameOverLeaderboard"></div>
+            <br>
+            <button id="restartButton" class="restart-button" onclick="game.restartGame()">🔄 RESTART</button>
+            <button class="restart-button" onclick="game.showLeaderboard()">🏆 LEADERBOARD</button>
+            <br><br>
+            <p style="font-size: 14px; opacity: 0.8;">You can also press SPACE</p>
+        </div>
+    </div>
+
+    <!-- No external dependencies needed for JSONBin.io -->
+
+    <script>
+        console.log('🍄 CHAMPIRUG LOADING...');
+
+        // Bitcoin Wallet Authentication
+        class BitcoinWalletAuth {
+            constructor() {
+                this.connectedWallet = null;
+                this.address = null;
+                this.signature = null;
+            }
+
+            // Check which wallets are available
+            getAvailableWallets() {
+                const wallets = [];
+                
+                // Check for Unisat
+                if (window.unisat) {
+                    wallets.push({ 
+                        name: 'Unisat', 
+                        provider: window.unisat, 
+                        type: 'unisat',
+                        logo: '🟠' // Orange circle for Unisat
+                    });
+                }
+                
+                // Check for Xverse (multiple detection methods)
+                const xverseProvider = window.XverseProviders?.BitcoinProvider || 
+                                      window.BitcoinProvider || 
+                                      window.xverse ||
+                                      (window.Xverse && window.Xverse.bitcoin);
+                
+                if (xverseProvider) {
+                    wallets.push({ 
+                        name: 'Xverse', 
+                        provider: xverseProvider, 
+                        type: 'xverse',
+                        logo: '🟣' // Purple circle for Xverse
+                    });
+                }
+                
+                console.log('🔍 Wallet detection results:', {
+                    unisat: !!window.unisat,
+                    xverseProviders: !!window.XverseProviders,
+                    bitcoinProvider: !!window.BitcoinProvider,
+                    xverse: !!window.xverse,
+                    xverseBitcoin: !!(window.Xverse && window.Xverse.bitcoin),
+                    windowKeys: Object.keys(window).filter(k => k.toLowerCase().includes('uni') || k.toLowerCase().includes('xver') || k.toLowerCase().includes('bitcoin')),
+                    found: wallets.map(w => w.name)
+                });
+                
+                return wallets;
+            }
+
+            // Connect to a wallet
+            async connectWallet(walletType = 'auto') {
+                try {
+                    const availableWallets = this.getAvailableWallets();
+                    
+                    if (availableWallets.length === 0) {
+                        throw new Error('No Bitcoin wallets found. Please install Unisat or Xverse.');
+                    }
+
+                    let wallet;
+                    if (walletType === 'auto' || !walletType) {
+                        wallet = availableWallets[0]; // Use first available
+                    } else {
+                        wallet = availableWallets.find(w => w.type === walletType);
+                        if (!wallet) {
+                            wallet = availableWallets[0];
+                        }
+                    }
+
+                    console.log('🔗 Connecting to', wallet.name, 'wallet...');
+
+                    if (wallet.type === 'unisat') {
+                        return await this.connectUnisat(wallet.provider);
+                    } else if (wallet.type === 'xverse') {
+                        return await this.connectXverse(wallet.provider);
+                    }
+                } catch (error) {
+                    console.error('❌ Wallet connection failed:', error);
+                    throw error;
+                }
+            }
+
+            // Connect to Unisat wallet
+            async connectUnisat(unisat) {
+                try {
+                    const accounts = await unisat.requestAccounts();
+                    if (accounts.length === 0) {
+                        throw new Error('No accounts found in Unisat wallet');
+                    }
+
+                    this.address = accounts[0];
+                    this.connectedWallet = 'unisat';
+
+                    // Sign authentication message
+                    const message = `Champirug Game Authentication\nWallet: ${this.address}\nTime: ${new Date().toISOString()}`;
+                    this.signature = await unisat.signMessage(message);
+
+                    console.log('✅ Unisat wallet connected:', this.address);
+                    return {
+                        address: this.address,
+                        wallet: 'Unisat',
+                        signature: this.signature
+                    };
+                } catch (error) {
+                    console.error('❌ Unisat connection failed:', error);
+                    throw error;
+                }
+            }
+
+            // Connect to Xverse wallet
+            async connectXverse(xverse) {
+                try {
+                    const response = await xverse.request('getAddresses', {});
+                    if (!response.result || response.result.addresses.length === 0) {
+                        throw new Error('No addresses found in Xverse wallet');
+                    }
+
+                    // Use the first payment address
+                    const paymentAddress = response.result.addresses.find(addr => addr.type === 'payment');
+                    this.address = paymentAddress ? paymentAddress.address : response.result.addresses[0].address;
+                    this.connectedWallet = 'xverse';
+
+                    // Sign authentication message
+                    const message = `Champirug Game Authentication\nWallet: ${this.address}\nTime: ${new Date().toISOString()}`;
+                    const signResponse = await xverse.request('signMessage', {
+                        address: this.address,
+                        message: message
+                    });
+
+                    this.signature = signResponse.result;
+
+                    console.log('✅ Xverse wallet connected:', this.address);
+                    return {
+                        address: this.address,
+                        wallet: 'Xverse',
+                        signature: this.signature
+                    };
+                } catch (error) {
+                    console.error('❌ Xverse connection failed:', error);
+                    throw error;
+                }
+            }
+
+            // Get display name for address (truncated)
+            getDisplayName() {
+                if (!this.address) return 'Anonymous';
+                return `${this.address.substring(0, 6)}...${this.address.substring(this.address.length - 4)}`;
+            }
+
+            // Check if wallet is connected
+            isConnected() {
+                return !!(this.address && this.signature);
+            }
+
+            // Disconnect wallet
+            disconnect() {
+                this.connectedWallet = null;
+                this.address = null;
+                this.signature = null;
+                console.log('🔓 Wallet authentication cleared');
+            }
+        }
+
+        // Initialize wallet auth
+        const walletAuth = new BitcoinWalletAuth();
+
+        // Mock scores with some wallet addresses
+        const MOCK_ONLINE_SCORES = [
+            {name: "bc1q7x...8a2f", score: 1250, timestamp: Date.now() - 86400000, date: "10/5/2025", wallet: "Unisat"},
+            {name: "3FxY9...kL8m", score: 980, timestamp: Date.now() - 172800000, date: "10/4/2025", wallet: "Xverse"},
+            {name: "1A8z3...9dR6", score: 850, timestamp: Date.now() - 259200000, date: "10/3/2025", wallet: "Unisat"},
+            {name: "bc1q2...7n5k", score: 720, timestamp: Date.now() - 345600000, date: "10/2/2025", wallet: "Xverse"}
+        ];
+
+        // Enhanced audio system
+        class SimpleAudio {
+            constructor() {
+                this.audioContext = null;
+                this.isMuted = false;
+                this.backgroundMusic = null;
+                this.musicGainNode = null;
+                this.initAudio();
+            }
+
+            initAudio() {
+                try {
+                    this.audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                    this.setupBackgroundMusic();
+                    console.log('🔊 Audio system initialized');
+                } catch (e) {
+                    console.warn('⚠️ Audio not available:', e);
+                }
+            }
+
+            async setupBackgroundMusic() {
+                try {
+                    const response = await fetch('sounds/Pixel Chaos.mp3');
+                    const arrayBuffer = await response.arrayBuffer();
+                    const audioBuffer = await this.audioContext.decodeAudioData(arrayBuffer);
+                    
+                    this.backgroundMusicBuffer = audioBuffer;
+                    console.log('🎵 Background music loaded successfully');
+                } catch (e) {
+                    console.warn('⚠️ Could not load background music:', e);
+                }
+            }
+
+            startBackgroundMusic() {
+                if (!this.backgroundMusicBuffer || this.isMuted) return;
+
+                try {
+                    // Stop previous music if playing
+                    this.stopBackgroundMusic();
+
+                    this.backgroundMusic = this.audioContext.createBufferSource();
+                    this.musicGainNode = this.audioContext.createGain();
+
+                    this.backgroundMusic.buffer = this.backgroundMusicBuffer;
+                    this.backgroundMusic.loop = true;
+                    this.musicGainNode.gain.value = 0.3; // Lower volume for background
+
+                    this.backgroundMusic.connect(this.musicGainNode);
+                    this.musicGainNode.connect(this.audioContext.destination);
+
+                    this.backgroundMusic.start();
+                    console.log('🎵 Background music started');
+                } catch (e) {
+                    console.warn('⚠️ Error starting background music:', e);
+                }
+            }
+
+            stopBackgroundMusic() {
+                if (this.backgroundMusic) {
+                    try {
+                        this.backgroundMusic.stop();
+                        this.backgroundMusic.disconnect();
+                        this.backgroundMusic = null;
+                    } catch (e) {
+                        console.warn('⚠️ Error stopping background music:', e);
+                    }
+                }
+            }
+
+            playSoundEffect(type) {
+                if (this.isMuted || !this.audioContext) return;
+
+                try {
+                    // Different sounds for different events
+                    if (type === 'coin') {
+                        this.playClassicCoinSound();
+                    } else if (type === 'gameOver') {
+                        this.playGameOverSound();
+                    }
+                } catch (e) {
+                    console.warn('⚠️ Error playing sound:', e);
+                }
+            }
+
+            playClassicCoinSound() {
+                // Classic "ding" coin sound using multiple oscillators
+                const duration = 0.3;
+                const now = this.audioContext.currentTime;
+
+                // First harmonic (fundamental frequency)
+                const osc1 = this.audioContext.createOscillator();
+                const gain1 = this.audioContext.createGain();
+                osc1.connect(gain1);
+                gain1.connect(this.audioContext.destination);
+                osc1.frequency.setValueAtTime(1000, now);
+                osc1.frequency.exponentialRampToValueAtTime(1500, now + 0.1);
+                gain1.gain.setValueAtTime(0.3, now);
+                gain1.gain.exponentialRampToValueAtTime(0.01, now + duration);
+                
+                // Second harmonic for richness
+                const osc2 = this.audioContext.createOscillator();
+                const gain2 = this.audioContext.createGain();
+                osc2.connect(gain2);
+                gain2.connect(this.audioContext.destination);
+                osc2.frequency.setValueAtTime(2000, now);
+                osc2.frequency.exponentialRampToValueAtTime(3000, now + 0.1);
+                gain2.gain.setValueAtTime(0.15, now);
+                gain2.gain.exponentialRampToValueAtTime(0.01, now + duration);
+
+                // Metallic overtone
+                const osc3 = this.audioContext.createOscillator();
+                const gain3 = this.audioContext.createGain();
+                osc3.connect(gain3);
+                gain3.connect(this.audioContext.destination);
+                osc3.frequency.setValueAtTime(3000, now);
+                osc3.frequency.exponentialRampToValueAtTime(4000, now + 0.05);
+                gain3.gain.setValueAtTime(0.1, now);
+                gain3.gain.exponentialRampToValueAtTime(0.01, now + 0.2);
+
+                osc1.start();
+                osc1.stop(now + duration);
+                osc2.start();
+                osc2.stop(now + duration);
+                osc3.start();
+                osc3.stop(now + 0.2);
+            }
+
+            playGameOverSound() {
+                const duration = 0.8;
+                const now = this.audioContext.currentTime;
+
+                const oscillator = this.audioContext.createOscillator();
+                const gainNode = this.audioContext.createGain();
+                oscillator.connect(gainNode);
+                gainNode.connect(this.audioContext.destination);
+
+                oscillator.frequency.setValueAtTime(300, now);
+                oscillator.frequency.exponentialRampToValueAtTime(100, now + duration);
+                gainNode.gain.setValueAtTime(0.2, now);
+                gainNode.gain.exponentialRampToValueAtTime(0.01, now + duration);
+                
+                oscillator.start();
+                oscillator.stop(now + duration);
+            }
+
+            toggleMute() {
+                this.isMuted = !this.isMuted;
+                
+                if (this.isMuted) {
+                    this.stopBackgroundMusic();
+                    console.log('🔇 Audio muted');
+                } else {
+                    if (window.game && window.game.isRunning) {
+                        this.startBackgroundMusic();
+                    }
+                    console.log('🔊 Audio enabled');
+                }
+                
+                return this.isMuted;
+            }
+        }
+
+        // Simple Online Leaderboard Manager
+        class OnlineLeaderboard {
+            constructor() {
+                this.isAvailable = true;
+                this.pollingInterval = null;
+                this.onlineScores = this.loadGlobalScores();
+            }
+
+            // Load global scores from localStorage (shared across all players)
+            loadGlobalScores() {
+                const saved = localStorage.getItem('champirug_global_scores');
+                if (saved) {
+                    return JSON.parse(saved);
+                } else {
+                    // Initialize with some demo scores
+                    return [...MOCK_ONLINE_SCORES];
+                }
+            }
+
+            // Save global scores to localStorage
+            saveGlobalScores(scores) {
+                localStorage.setItem('champirug_global_scores', JSON.stringify(scores));
+                this.onlineScores = scores;
+            }
+
+            async saveScore(playerName, score) {
+                try {
+                    console.log('📤 Saving score to global leaderboard...');
+                    
+                    // Add new score
+                    const newScore = {
+                        name: playerName,
+                        score: score,
+                        timestamp: Date.now(),
+                        date: new Date().toLocaleDateString(),
+                        id: Math.random().toString(36).substr(2, 9)
+                    };
+                    
+                    this.onlineScores.push(newScore);
+                    
+                    // Sort and keep top 50
+                    const sortedScores = this.onlineScores
+                        .sort((a, b) => b.score - a.score)
+                        .slice(0, 50);
+                    
+                    this.saveGlobalScores(sortedScores);
+                    
+                    console.log('✅ Score saved successfully!', newScore);
+                    return true;
+                } catch (error) {
+                    console.error('❌ Error saving score:', error);
+                    return false;
+                }
+            }
+
+            async getTopScores(limit = 10) {
+                try {
+                    console.log('📥 Fetching global scores...');
+                    
+                    const scores = this.loadGlobalScores()
+                        .sort((a, b) => b.score - a.score)
+                        .slice(0, limit);
+                    
+                    console.log('📊 Fetched', scores.length, 'global scores');
+                    return scores;
+                } catch (error) {
+                    console.error('❌ Error fetching scores:', error);
+                    return [];
+                }
+            }
+
+            // Simulate real-time updates (for demo purposes)
+            startPolling(callback, interval = 30000) {
+                if (this.pollingInterval) {
+                    clearInterval(this.pollingInterval);
+                }
+                
+                this.pollingInterval = setInterval(async () => {
+                    try {
+                        const scores = await this.getTopScores(10);
+                        callback(scores);
+                    } catch (error) {
+                        console.warn('⚠️ Polling error:', error);
+                    }
+                }, interval);
+                
+                console.log('🔄 Started polling every', interval/1000, 'seconds');
+            }
+
+            stopPolling() {
+                if (this.pollingInterval) {
+                    clearInterval(this.pollingInterval);
+                    this.pollingInterval = null;
+                    console.log('⏹️ Stopped polling');
+                }
+            }
+        }
+
+        class ChampiGame {
+            constructor() {
+                console.log('🎮 Initializing game...');
+                
+                this.container = document.getElementById('gameContainer');
+                this.playerElement = document.getElementById('player');
+                
+                // Dynamic sizing system
+                this.updateDynamicSizes();
+                
+                // UI Elements
+                this.scoreEl = document.getElementById('score');
+                this.timeEl = document.getElementById('time');
+                this.highScoreEl = document.getElementById('highScore');
+                this.instructionsEl = document.getElementById('instructions');
+                this.gameOverEl = document.getElementById('gameOver');
+                this.finalScoreEl = document.getElementById('finalScore');
+                this.finalTimeEl = document.getElementById('finalTime');
+                this.jumpStatusEl = document.getElementById('jumpStatus');
+                this.walletStatusEl = document.getElementById('walletStatus');
+                this.walletConnectBtn = document.getElementById('walletConnectBtn');
+                this.leaderboardEl = document.getElementById('leaderboardList');
+                this.gameOverLeaderboardEl = document.getElementById('gameOverLeaderboard');
+
+                // Player physics with dynamic sizing
+                this.player = {
+                    x: 80,
+                    y: 0,
+                    width: this.playerSize,
+                    height: this.playerSize,
+                    isJumping: false,
+                    jumpForce: 0,
+                    gravity: 0.8,
+                    jumpSpeed: -16
+                };
+
+                // Game state
+                this.isRunning = false;
+                this.score = 0;
+                this.time = 0;
+                this.enemies = [];
+                this.coins = [];
+                
+                // Leaderboard system
+                this.highScore = parseInt(localStorage.getItem('champiHighScore')) || 0;
+                this.leaderboard = JSON.parse(localStorage.getItem('champiLeaderboard')) || [];
+                this.highScoreEl.textContent = this.highScore;
+                
+                // Audio system
+                this.audio = new SimpleAudio();
+                
+                // Online Leaderboard with JSONBin.io
+                this.onlineLeaderboard = new OnlineLeaderboard();
+                console.log('🌐 Online Leaderboard ready!');
+                
+                this.init();
+                console.log('✅ Game initialized successfully!');
+            }
+
+            updateDynamicSizes() {
+                // Calculate dynamic sizes based on viewport
+                const vw = window.innerWidth / 100;
+                const vh = window.innerHeight / 100;
+                const containerWidth = this.container.offsetWidth || 1200;
+                const containerHeight = this.container.offsetHeight || 800;
+                
+                // Player size: 8% of viewport but respecting min/max limits
+                this.playerSize = Math.min(
+                    Math.max(8 * Math.min(vw, vh), 40), // Min 40px
+                    80 // Max 80px
+                );
+                
+                // Enemy size: 7% of viewport but respecting min/max limits  
+                this.enemySize = Math.min(
+                    Math.max(7 * Math.min(vw, vh), 35), // Min 35px
+                    70 // Max 70px
+                );
+                
+                // Coin size: 5% of viewport but respecting min/max limits
+                this.coinSize = Math.min(
+                    Math.max(5 * Math.min(vw, vh), 25), // Min 25px
+                    50 // Max 50px
+                );
+                
+                console.log(`📐 Dynamic sizes - Player: ${this.playerSize}px, Enemy: ${this.enemySize}px, Coin: ${this.coinSize}px`);
+            }
+
+            init() {
+                // Controles de teclado mejorados
+                document.addEventListener('keydown', (e) => {
+                    console.log('🎹 Tecla presionada:', e.key, e.code);
+                    
+                    if (e.code === 'Space' || e.key === ' ') {
+                        e.preventDefault();
+                        this.handleStart();
+                    } else if (e.code === 'ArrowUp' || e.key === 'ArrowUp') {
+                        e.preventDefault();
+                        this.moveUp();
+                    } else if (e.code === 'ArrowDown' || e.key === 'ArrowDown') {
+                        e.preventDefault();
+                        this.moveDown();
+                    } else if (e.code === 'ArrowLeft' || e.key === 'ArrowLeft') {
+                        e.preventDefault();
+                        this.moveLeft();
+                    } else if (e.code === 'ArrowRight' || e.key === 'ArrowRight') {
+                        e.preventDefault();
+                        this.moveRight();
+                    }
+                });
+
+                // Controles de mouse/touch
+                this.container.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    if (!this.isRunning) {
+                        this.handleStart();
+                    } else {
+                        this.moveUp();
+                    }
+                });
+
+                // Iniciar bucle de juego
+                this.gameLoop();
+                
+                // Inicializar leaderboard display
+                this.updateLeaderboardDisplay();
+                
+                // Load online leaderboard at startup and start real-time updates
+                setTimeout(() => {
+                    this.updateOnlineLeaderboard();
+                    
+                    // Check for available wallets and update UI
+                    this.checkAvailableWallets();
+                    
+                    // Start polling for real-time updates every 30 seconds
+                    this.onlineLeaderboard.startPolling((onlineScores) => {
+                        if (onlineScores.length > 0) {
+                            this.leaderboard = onlineScores;
+                            this.updateLeaderboardDisplay();
+                            console.log('🔄 Real-time update:', onlineScores.length, 'scores');
+                        }
+                    }, 30000);
+                }, 2000);
+                
+                // Listen for window resize to update dynamic sizes
+                window.addEventListener('resize', () => {
+                    this.updateDynamicSizes();
+                    // Update player size in real time
+                    this.player.width = this.playerSize;
+                    this.player.height = this.playerSize;
+                });
+                
+                console.log('🎯 Controls configured. Use ARROW KEYS to move!');
+            }
+
+            // Update leaderboard with online scores
+            async updateOnlineLeaderboard() {
+                if (!this.firebaseLeaderboard || !this.firebaseLeaderboard.isAvailable) {
+                    console.log('� Using local leaderboard only');
+                    return;
+                }
+                
+                try {
+                    console.log('🌐 Fetching online scores...');
+                    const onlineScores = await this.firebaseLeaderboard.getTopScores(10);
+                    console.log('📊 Online scores received:', onlineScores.length);
+                    
+                    if (onlineScores.length > 0) {
+                        // Merge online and local scores
+                        const allScores = [...this.leaderboard, ...onlineScores];
+                        
+                        // Remove duplicates based on score and timestamp
+                        const uniqueScores = allScores.filter((score, index, arr) => 
+                            arr.findIndex(s => 
+                                s.score === score.score && 
+                                (s.timestamp === score.timestamp || s.time === score.time)
+                            ) === index
+                        );
+                        
+                        this.leaderboard = uniqueScores
+                            .sort((a, b) => b.score - a.score)
+                            .slice(0, 10);
+                        
+                        this.updateLeaderboardDisplay();
+                        console.log('✅ Leaderboard updated with', onlineScores.length, 'online scores');
+                    } else {
+                        console.log('📱 No online scores, using local leaderboard');
+                    }
+                } catch (error) {
+                    console.warn('⚠️ Failed to update online leaderboard:', error);
+                }
+            }
+
+            // Disconnect wallet
+            disconnectWallet() {
+                try {
+                    console.log('🔓 Disconnecting wallet...');
+                    
+                    const wasConnected = walletAuth.isConnected();
+                    const walletName = walletAuth.connectedWallet;
+                    const address = walletAuth.address;
+                    
+                    // Disconnect wallet
+                    walletAuth.disconnect();
+                    
+                    // Clear stored wallet info
+                    localStorage.removeItem('champiWalletAddress');
+                    localStorage.removeItem('champiWalletType');
+                    
+                    // Update UI
+                    this.updateWalletStatus();
+                    
+                    if (wasConnected) {
+                        alert(`🔓 Wallet disconnected successfully!\n\nAddress: ${address}\nWallet: ${walletName || 'Unknown'}\n\nYou can reconnect anytime to compete in the global leaderboard.`);
+                        console.log('✅ Wallet disconnected successfully');
+                    }
+                    
+                } catch (error) {
+                    console.error('❌ Error disconnecting wallet:', error);
+                    alert(`❌ Error disconnecting wallet: ${error.message}`);
+                }
+            }
+
+            // Show donation modal
+            showDonation() {
+                const donationAddress = 'bc1p9vdlyxa2t4maf40rxjsnrrfu77gh96y4s4c9xhz60pq083q5c5dst60hxz';
+                
+                // Copy to clipboard
+                if (navigator.clipboard && navigator.clipboard.writeText) {
+                    navigator.clipboard.writeText(donationAddress).then(() => {
+                        console.log('✅ Donation address copied to clipboard');
+                    }).catch(err => {
+                        console.warn('⚠️ Failed to copy to clipboard:', err);
+                    });
+                }
+
+                // Show donation dialog
+                const message = `💜 DONATE TO CHAMPIRUG DEVELOPMENT
+You will receive nothing.
+
+₿ Bitcoin Address:
+${donationAddress}
+
+✅ Address copied to clipboard!
+
+Thank you for supporting indie game development! 🍄`;
+
+                alert(message);
+                
+                console.log('💜 Donation address displayed:', donationAddress);
+            }
+
+            handleStart() {
+                if (!this.isRunning) {
+                    console.log('🎬 Starting game...');
+                    
+                    // If in game over, restart
+                    if (this.gameOverEl.style.display === 'block') {
+                        this.restartGame();
+                    } else {
+                        this.startGame();
+                    }
+                }
+            }
+
+            moveUp() {
+                if (!this.isRunning) return;
+                
+                console.log('⬆️ MOVING UP!');
+                this.player.y = Math.min(this.player.y + 40, 200);
+                this.playerElement.style.bottom = this.player.y + 'px';
+                this.playerElement.style.filter = 'brightness(1.3)';
+                this.jumpStatusEl.textContent = `⬆️ Up: Y=${this.player.y}`;
+                
+                setTimeout(() => {
+                    this.playerElement.style.filter = 'none';
+                }, 200);
+            }
+
+            moveDown() {
+                if (!this.isRunning) return;
+                
+                console.log('⬇️ MOVING DOWN!');
+                this.player.y = Math.max(this.player.y - 40, 0);
+                this.playerElement.style.bottom = this.player.y + 'px';
+                this.playerElement.style.filter = 'brightness(0.8)';
+                this.jumpStatusEl.textContent = `⬇️ Down: Y=${this.player.y}`;
+                
+                setTimeout(() => {
+                    this.playerElement.style.filter = 'none';
+                }, 200);
+            }
+
+            moveLeft() {
+                if (!this.isRunning) return;
+                
+                console.log('⬅️ MOVING LEFT!');
+                this.player.x = Math.max(this.player.x - 20, 0);
+                this.playerElement.style.left = this.player.x + 'px';
+                this.playerElement.style.filter = 'hue-rotate(90deg)';
+                this.jumpStatusEl.textContent = `⬅️ Left: X=${this.player.x}`;
+                
+                setTimeout(() => {
+                    this.playerElement.style.filter = 'none';
+                }, 200);
+            }
+
+            moveRight() {
+                if (!this.isRunning) return;
+                
+                console.log('➡️ MOVING RIGHT!');
+                const containerWidth = this.container.offsetWidth || 1200;
+                this.player.x = Math.min(this.player.x + 20, containerWidth - 40);
+                this.playerElement.style.left = this.player.x + 'px';
+                this.playerElement.style.filter = 'hue-rotate(-90deg)';
+                this.jumpStatusEl.textContent = `➡️ Right: X=${this.player.x}`;
+                
+                setTimeout(() => {
+                    this.playerElement.style.filter = 'none';
+                }, 200);
+            }
+
+            startGame() {
+                console.log('🎮 GAME STARTED!');
+                this.isRunning = true;
+                this.score = 0;
+                this.time = 0;
+                this.enemies = [];
+                this.coins = [];
+                
+                // Hide menus
+                this.instructionsEl.style.display = 'none';
+                this.gameOverEl.style.display = 'none';
+                
+                // Reset player
+                this.player.x = 80;
+                this.player.y = 0;
+                this.player.isJumping = false;
+                this.player.jumpForce = 0;
+                this.playerElement.style.bottom = '0px';
+                this.playerElement.style.left = '80px';
+                
+                // Start background music
+                this.audio.startBackgroundMusic();
+                
+                // Timers de spawn
+                this.enemyTimer = setInterval(() => this.spawnEnemy(), 2500);
+                this.coinTimer = setInterval(() => this.spawnCoin(), 3500);
+                this.scoreTimer = setInterval(() => {
+                    this.score += 10;
+                    this.time++;
+                    this.scoreEl.textContent = this.score;
+                    this.timeEl.textContent = this.time;
+                }, 1000);
+            }
+
+            spawnEnemy() {
+                const containerWidth = this.container.offsetWidth || 1200;
+                const heights = [0, 40, 80, 120, 160];
+                const enemy = {
+                    x: containerWidth,
+                    y: heights[Math.floor(Math.random() * heights.length)],
+                    width: this.enemySize,
+                    height: this.enemySize,
+                    speed: 4,
+                    element: document.createElement('div')
+                };
+                
+                enemy.element.className = 'simple-enemy';
+                enemy.element.style.left = enemy.x + 'px';
+                enemy.element.style.bottom = enemy.y + 'px';
+                this.container.appendChild(enemy.element);
+                this.enemies.push(enemy);
+                
+                console.log('🐻 Oso spawneado en altura:', enemy.y, 'width:', containerWidth);
+            }
+
+            spawnCoin() {
+                const containerWidth = this.container.offsetWidth || 1200;
+                const heights = [0, 30, 60, 90, 120, 150];
+                const coin = {
+                    x: containerWidth,
+                    y: heights[Math.floor(Math.random() * heights.length)],
+                    width: this.coinSize,
+                    height: this.coinSize,
+                    speed: 3,
+                    element: document.createElement('div')
+                };
+                
+                coin.element.className = 'simple-bitcoin';
+                coin.element.style.left = coin.x + 'px';
+                coin.element.style.bottom = coin.y + 'px';
+                this.container.appendChild(coin.element);
+                this.coins.push(coin);
+                
+                console.log('🪙 Moneda spawneada en altura:', coin.y);
+            }
+
+            gameLoop() {
+                if (this.isRunning) {
+                    // Manual control system - no automatic jump physics
+                    if (!this.jumpStatusEl.textContent.includes('⬆️') && 
+                        !this.jumpStatusEl.textContent.includes('⬇️') && 
+                        !this.jumpStatusEl.textContent.includes('⬅️') && 
+                        !this.jumpStatusEl.textContent.includes('➡️')) {
+                        this.jumpStatusEl.textContent = `🎮 Manual Control - Position: X=${this.player.x}, Y=${this.player.y}`;
+                    }
+                    
+                    // Actualizar enemigos
+                    this.enemies = this.enemies.filter(enemy => {
+                        enemy.x -= enemy.speed;
+                        enemy.element.style.left = enemy.x + 'px';
+                        
+                        // Check collision
+                        if (this.checkCollision(this.player, enemy)) {
+                            console.log('💥 COLLISION WITH BEAR!');
+                            this.gameOver();
+                            return true;
+                        }
+                        
+                        // Eliminar si sale de pantalla
+                        if (enemy.x < -enemy.width) {
+                            enemy.element.remove();
+                            return false;
+                        }
+                        return true;
+                    });
+                    
+                    // Actualizar monedas
+                    this.coins = this.coins.filter(coin => {
+                        coin.x -= coin.speed;
+                        coin.element.style.left = coin.x + 'px';
+                        
+                        // Check collision
+                        if (this.checkCollision(this.player, coin)) {
+                            console.log('🪙 COIN COLLECTED!');
+                            this.score += 100;
+                            this.scoreEl.textContent = this.score;
+                            this.audio.playSoundEffect('coin');
+                            coin.element.remove();
+                            return false;
+                        }
+                        
+                        // Eliminar si sale de pantalla
+                        if (coin.x < -coin.width) {
+                            coin.element.remove();
+                            return false;
+                        }
+                        return true;
+                    });
+                }
+                
+                requestAnimationFrame(() => this.gameLoop());
+            }
+
+            checkCollision(obj1, obj2) {
+                const playerLeft = obj1.x;
+                const playerRight = obj1.x + obj1.width;
+                const playerTop = obj1.y;
+                const playerBottom = obj1.y + obj1.height;
+                
+                const objLeft = obj2.x;
+                const objRight = obj2.x + obj2.width;
+                const objTop = obj2.y;
+                const objBottom = obj2.y + obj2.height;
+                
+                return playerRight > objLeft &&
+                       playerLeft < objRight &&
+                       playerBottom > objTop &&
+                       playerTop < objBottom;
+            }
+
+            async gameOver() {
+                console.log('💀 GAME OVER!');
+                this.isRunning = false;
+                
+                // Stop background music
+                this.audio.stopBackgroundMusic();
+                
+                // Clear timers
+                clearInterval(this.enemyTimer);
+                clearInterval(this.coinTimer);
+                clearInterval(this.scoreTimer);
+                
+                // LIMPIAR TODOS LOS ELEMENTOS DEL JUEGO
+                this.enemies.forEach(enemy => {
+                    if (enemy.element && enemy.element.parentNode) {
+                        enemy.element.remove();
+                    }
+                });
+                this.coins.forEach(coin => {
+                    if (coin.element && coin.element.parentNode) {
+                        coin.element.remove();
+                    }
+                });
+                this.enemies = [];
+                this.coins = [];
+                
+                // Play game over sound
+                this.audio.playSoundEffect('gameOver');
+                
+                // Update leaderboard
+                const entry = {
+                    score: this.score,
+                    time: this.time,
+                    date: new Date().toLocaleDateString()
+                };
+                
+                await this.addToLeaderboard(entry);
+                
+                // Update high score
+                if (this.score > this.highScore) {
+                    this.highScore = this.score;
+                    localStorage.setItem('champiHighScore', this.highScore);
+                    this.highScoreEl.textContent = this.highScore;
+                    console.log('🏆 NEW RECORD!');
+                }
+                
+                this.finalScoreEl.textContent = this.score;
+                this.finalTimeEl.textContent = this.time;
+                
+                this.updateLeaderboardDisplay();
+                this.showGameOverLeaderboard();
+                this.gameOverEl.style.display = 'block';
+            }
+
+            async addToLeaderboard(entry) {
+                console.log('📝 Adding score to leaderboard:', entry);
+                console.log('📊 Current leaderboard before adding:', this.leaderboard.length, 'entries');
+                
+                // Add to local leaderboard first
+                this.leaderboard.push(entry);
+                this.leaderboard.sort((a, b) => b.score - a.score);
+                this.leaderboard = this.leaderboard.slice(0, 10);
+                localStorage.setItem('champiLeaderboard', JSON.stringify(this.leaderboard));
+                console.log('✅ Added to local leaderboard, now has:', this.leaderboard.length, 'entries');
+                
+                // Save to JSONBin.io online leaderboard
+                if (this.onlineLeaderboard && this.onlineLeaderboard.isAvailable) {
+                    try {
+                        console.log('🔄 Saving to online leaderboard...');
+                        const playerName = await this.getPlayerName();
+                        const success = await this.onlineLeaderboard.saveScore(playerName, entry.score);
+                        
+                        if (success) {
+                            console.log('✅ Score saved online!');
+                            // Refresh online leaderboard immediately
+                            setTimeout(async () => {
+                                await this.updateOnlineLeaderboard();
+                            }, 1500);
+                        } else {
+                            console.log('❌ Failed to save online');
+                        }
+                    } catch (error) {
+                        console.warn('⚠️ Error saving online:', error);
+                    }
+                } else {
+                    console.log('📱 Online leaderboard not available, using local only');
+                }
+                
+                // Update display immediately with local data
+                this.updateLeaderboardDisplay();
+                
+                // Update wallet status display
+                this.updateWalletStatus();
+            }
+
+            // Update wallet status in UI
+            updateWalletStatus() {
+                if (!this.walletStatusEl) return;
+                
+                if (walletAuth.isConnected()) {
+                    this.walletStatusEl.innerHTML = `🔑 Wallet: ${walletAuth.getDisplayName()} ✅`;
+                    this.walletStatusEl.style.color = '#90EE90';
+                    
+                    if (this.walletConnectBtn) {
+                        this.walletConnectBtn.innerHTML = '🔓 Logout';
+                        this.walletConnectBtn.style.background = '#DC143C';
+                        this.walletConnectBtn.disabled = false;
+                        this.walletConnectBtn.onclick = () => this.disconnectWallet();
+                    }
+                } else {
+                    this.walletStatusEl.innerHTML = '🔑 Wallet: Not connected';
+                    this.walletStatusEl.style.color = '#999';
+                    
+                    if (this.walletConnectBtn) {
+                        this.walletConnectBtn.innerHTML = '₿ Connect Wallet';
+                        this.walletConnectBtn.style.background = '#FF8C00';
+                        this.walletConnectBtn.disabled = false;
+                        this.walletConnectBtn.onclick = () => this.connectWallet();
+                    }
+                }
+            }
+
+            // Manual wallet connection method
+            async connectWallet() {
+                try {
+                    console.log('🔗 Manual wallet connection requested...');
+                    
+                    if (walletAuth.isConnected()) {
+                        alert('✅ Wallet already connected!\n\nAddress: ' + walletAuth.address);
+                        return;
+                    }
+
+                    // Show available wallets
+                    const availableWallets = walletAuth.getAvailableWallets();
+                    
+                    if (availableWallets.length === 0) {
+                        alert('❌ No Bitcoin wallets found!\n\nPlease install:\n• Unisat Wallet (Chrome extension)\n• Xverse Wallet\n\nThen refresh the page.');
+                        return;
+                    }
+
+                    // Show available wallets info
+                    console.log('📱 Available wallets:', availableWallets.map(w => w.name));
+                    
+                    // If only one wallet, connect directly
+                    if (availableWallets.length === 1) {
+                        console.log('📱 Only one wallet available:', availableWallets[0].name);
+                        const walletInfo = await walletAuth.connectWallet(availableWallets[0].type);
+                        this.updateWalletStatus();
+                        alert(`✅ Wallet connected successfully!\n\nWallet: ${walletInfo.wallet}\nAddress: ${walletInfo.address}\n\nYou're ready to compete in the global leaderboard!`);
+                        return;
+                    }
+
+                    // Multiple wallets - show visual selector
+                    this.showWalletModal(availableWallets);
+                    
+                } catch (error) {
+                    console.error('❌ Manual wallet connection failed:', error);
+                    alert(`❌ Wallet connection failed!\n\nError: ${error.message}\n\nPlease make sure:\n• Your wallet is unlocked\n• You approve the connection request\n• Your wallet supports message signing`);
+                }
+            }
+
+            // Show wallet selection modal
+            showWalletModal(availableWallets) {
+                const modal = document.getElementById('walletModal');
+                const container = document.getElementById('walletButtonsContainer');
+                
+                // Clear previous buttons
+                container.innerHTML = '';
+                
+                // Create buttons for each wallet
+                availableWallets.forEach(wallet => {
+                    const button = document.createElement('div');
+                    button.className = `wallet-button ${wallet.type}`;
+                    button.onclick = () => this.selectWallet(wallet.type);
+                    
+                    button.innerHTML = `
+                        <div class="wallet-logo">${wallet.logo}</div>
+                        <strong>${wallet.name}</strong><br>
+                        <small>Click to connect</small>
+                    `;
+                    
+                    container.appendChild(button);
+                });
+                
+                // Show modal
+                modal.style.display = 'flex';
+                console.log('📱 Wallet selection modal shown');
+            }
+
+            // Select and connect to wallet
+            async selectWallet(walletType) {
+                try {
+                    console.log('👤 User selected wallet:', walletType);
+                    
+                    // Hide modal
+                    document.getElementById('walletModal').style.display = 'none';
+                    
+                    // Connect to selected wallet
+                    const walletInfo = await walletAuth.connectWallet(walletType);
+                    
+                    // Update UI
+                    this.updateWalletStatus();
+                    
+                    // Show success message
+                    alert(`✅ Wallet connected successfully!\n\nWallet: ${walletInfo.wallet}\nAddress: ${walletInfo.address}\n\nYou're ready to compete in the global leaderboard!`);
+                    
+                    console.log('✅ Wallet connection successful:', walletInfo);
+                    
+                } catch (error) {
+                    console.error('❌ Wallet selection failed:', error);
+                    alert(`❌ Connection to ${walletType} failed!\n\nError: ${error.message}\n\nPlease try again or select a different wallet.`);
+                }
+            }
+
+            // Check available wallets and update button
+            checkAvailableWallets() {
+                const availableWallets = walletAuth.getAvailableWallets();
+                
+                if (this.walletConnectBtn) {
+                    if (availableWallets.length === 0) {
+                        this.walletConnectBtn.innerHTML = '❌ No Wallet';
+                        this.walletConnectBtn.style.background = '#666';
+                        this.walletConnectBtn.title = 'Install Unisat or Xverse wallet';
+                    } else {
+                        const walletNames = availableWallets.map(w => w.name).join('/');
+                        this.walletConnectBtn.title = `Connect ${walletNames} wallet`;
+                        console.log('✅ Available wallets:', walletNames);
+                    }
+                }
+            }
+
+            // Get player identity using Bitcoin wallet
+            async getPlayerName() {
+                try {
+                    // Check if wallet is already connected
+                    if (walletAuth.isConnected()) {
+                        console.log('🔗 Using connected wallet:', walletAuth.getDisplayName());
+                        return walletAuth.getDisplayName();
+                    }
+
+                    // Show wallet connection dialog
+                    const useWallet = confirm('🚀 Connect your Bitcoin wallet for authentication?\n\n✅ Unisat or Xverse supported\n✅ No personal data required\n✅ Just sign to verify wallet ownership\n\nClick OK to connect wallet, or Cancel to enter name manually.');
+
+                    if (useWallet) {
+                        const walletInfo = await walletAuth.connectWallet();
+                        console.log('✅ Wallet authenticated:', walletInfo);
+                        
+                        // Store wallet info
+                        localStorage.setItem('champiWalletAddress', walletInfo.address);
+                        localStorage.setItem('champiWalletType', walletInfo.wallet);
+                        
+                        return walletAuth.getDisplayName();
+                    } else {
+                        // Fallback to manual name entry
+                        return await this.getManualPlayerName();
+                    }
+                } catch (error) {
+                    console.warn('⚠️ Wallet authentication failed:', error);
+                    
+                    // Show error and fallback to manual
+                    alert(`❌ Wallet connection failed: ${error.message}\n\nFalling back to manual name entry.`);
+                    return await this.getManualPlayerName();
+                }
+            }
+
+            // Fallback manual name entry
+            async getManualPlayerName() {
+                let playerName = localStorage.getItem('champiPlayerName');
+                
+                if (!playerName) {
+                    playerName = prompt('🏆 Enter your name for the leaderboard:') || 'Anonymous';
+                    playerName = playerName.trim().substring(0, 20) || 'Anonymous';
+                    localStorage.setItem('champiPlayerName', playerName);
+                }
+                
+                return playerName;
+            }
+
+            updateLeaderboardDisplay() {
+                console.log('🖥️ Updating leaderboard display...');
+                console.log('📊 Current leaderboard:', this.leaderboard);
+                
+                if (!this.leaderboardEl) {
+                    console.warn('❌ Leaderboard element not found!');
+                    return;
+                }
+                
+                this.leaderboardEl.innerHTML = '';
+                const top5 = this.leaderboard.slice(0, 5);
+                console.log('🏆 Top 5 scores:', top5);
+                
+                if (top5.length === 0) {
+                    this.leaderboardEl.innerHTML = '<div style="opacity:0.6;">No scores yet</div>';
+                    console.log('📝 No scores to display');
+                    return;
+                }
+                
+                top5.forEach((entry, index) => {
+                    const div = document.createElement('div');
+                    div.className = 'leaderboard-entry';
+                    
+                    // Show player name/wallet if available (online score) or date (local score)
+                    const displayInfo = entry.name ? 
+                        `${entry.name.substring(0, 10)}` : 
+                        entry.date || 'Local';
+                    
+                    // Add wallet indicator for addresses
+                    const isWalletAddress = entry.name && (entry.name.includes('...') || entry.wallet);
+                    const walletIcon = isWalletAddress ? '₿' : '🌐';
+                    
+                    div.innerHTML = `
+                        <span>${index + 1}. ${entry.score}${entry.name ? ' ' + walletIcon : ''}</span>
+                        <span style="font-size: 0.9em;">${displayInfo}${entry.wallet ? ' ' + entry.wallet : ''}</span>
+                    `;
+                    this.leaderboardEl.appendChild(div);
+                });
+            }
+
+            showGameOverLeaderboard() {
+                if (!this.gameOverLeaderboardEl) return;
+                
+                const currentScore = this.score;
+                const currentRank = this.leaderboard.findIndex(entry => 
+                    entry.score === currentScore && entry.time === this.time
+                ) + 1;
+                
+                let html = '<br><div style="background:rgba(255,215,0,0.1);padding:10px;border-radius:5px;margin:10px 0;">';
+                
+                if (currentRank <= 10) {
+                    html += `<h4 style="color:#FFD700;margin:0;">🏆 Leaderboard Position: #${currentRank}</h4>`;
+                } else {
+                    html += '<h4 style="color:#FFD700;margin:0;">📊 Top 5 Scores:</h4>';
+                }
+                
+                html += '<div style="margin-top:10px;font-size:14px;">';
+                
+                const top5 = this.leaderboard.slice(0, 5);
+                top5.forEach((entry, index) => {
+                    const isCurrentGame = entry.score === currentScore && entry.time === this.time;
+                    const style = isCurrentGame ? 'color:#FFD700;font-weight:bold;' : '';
+                    html += `<div style="display:flex;justify-content:space-between;margin:3px 0;${style}">
+                        <span>#${index + 1} - ${entry.score} pts</span>
+                        <span>${entry.date}</span>
+                    </div>`;
+                });
+                
+                html += '</div></div>';
+                this.gameOverLeaderboardEl.innerHTML = html;
+            }
+
+            restartGame() {
+                console.log('🔄 Restarting game...');
+                this.gameOverEl.style.display = 'none';
+                this.instructionsEl.style.display = 'block';
+                
+                // Reset game state
+                this.score = 0;
+                this.time = 0;
+                this.player.x = 80;
+                this.player.y = 0;
+                
+                // Reset UI
+                this.scoreEl.textContent = '0';
+                this.timeEl.textContent = '0';
+                this.playerElement.style.left = '80px';
+                this.playerElement.style.bottom = '0px';
+                this.jumpStatusEl.textContent = '🔄 Status: Waiting...';
+                
+                // Update leaderboard display
+                this.updateLeaderboardDisplay();
+            }
+
+            showLeaderboard() {
+                alert('🏆 TOP 10 BEST SCORES:\n\n' + 
+                    this.leaderboard.slice(0, 10).map((entry, index) => 
+                        `#${index + 1}: ${entry.score} pts (${entry.date})`
+                    ).join('\n') || 'No scores recorded yet');
+            }
+        }
+
+        // Start when page loads
+        // Global variable to access the game
+        let game;
+
+        // Global function to close wallet modal
+        function closeWalletModal() {
+            document.getElementById('walletModal').style.display = 'none';
+            console.log('❌ Wallet selection modal closed');
+        }
+        
+        window.addEventListener('load', () => {
+            console.log('🚀 Starting CHAMPIRUG...');
+            game = new ChampiGame();
+            
+            // Update wallet status on page load
+            setTimeout(() => {
+                game.updateWalletStatus();
+                console.log('✅ Wallet status updated on page load');
+            }, 500);
+        });
+    </script>
+
+    <!-- Wallet Selection Modal -->
+    <div id="walletModal" class="wallet-modal">
+        <div class="wallet-modal-content">
+            <button class="wallet-close" onclick="closeWalletModal()">×</button>
+            <h3>🔗 Choose Your Bitcoin Wallet</h3>
+            <div id="walletButtonsContainer">
+                <!-- Wallet buttons will be inserted here -->
+            </div>
+        </div>
+    </div>
+</body>
+</html>
