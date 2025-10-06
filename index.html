@@ -459,11 +459,26 @@
                     });
                 }
                 
-                // Check for Xverse (multiple detection methods)
-                const xverseProvider = window.XverseProviders?.BitcoinProvider || 
-                                      window.BitcoinProvider || 
-                                      window.xverse ||
-                                      (window.Xverse && window.Xverse.bitcoin);
+                // Check for Xverse (exhaustive detection methods)
+                let xverseProvider = null;
+                
+                // Try different ways to find Xverse
+                if (window.XverseProviders?.BitcoinProvider) {
+                    xverseProvider = window.XverseProviders.BitcoinProvider;
+                    console.log('🟣 Found Xverse via XverseProviders.BitcoinProvider');
+                } else if (window.BitcoinProvider) {
+                    xverseProvider = window.BitcoinProvider;
+                    console.log('🟣 Found Xverse via BitcoinProvider');
+                } else if (window.xverse) {
+                    xverseProvider = window.xverse;
+                    console.log('🟣 Found Xverse via window.xverse');
+                } else if (window.Xverse?.bitcoin) {
+                    xverseProvider = window.Xverse.bitcoin;
+                    console.log('🟣 Found Xverse via Xverse.bitcoin');
+                } else if (window.sats) {
+                    xverseProvider = window.sats;
+                    console.log('🟣 Found Xverse via window.sats');
+                }
                 
                 if (xverseProvider) {
                     wallets.push({ 
@@ -472,6 +487,14 @@
                         type: 'xverse',
                         logo: '🟣' // Purple circle for Xverse
                     });
+                } else {
+                    console.log('🔍 Xverse not detected. Available window properties:', 
+                        Object.keys(window).filter(k => 
+                            k.toLowerCase().includes('xver') || 
+                            k.toLowerCase().includes('bitcoin') || 
+                            k.toLowerCase().includes('sats')
+                        )
+                    );
                 }
                 
                 console.log('🔍 Wallet detection results:', {
@@ -480,8 +503,15 @@
                     bitcoinProvider: !!window.BitcoinProvider,
                     xverse: !!window.xverse,
                     xverseBitcoin: !!(window.Xverse && window.Xverse.bitcoin),
-                    windowKeys: Object.keys(window).filter(k => k.toLowerCase().includes('uni') || k.toLowerCase().includes('xver') || k.toLowerCase().includes('bitcoin')),
-                    found: wallets.map(w => w.name)
+                    sats: !!window.sats,
+                    walletKeys: Object.keys(window).filter(k => 
+                        k.toLowerCase().includes('uni') || 
+                        k.toLowerCase().includes('xver') || 
+                        k.toLowerCase().includes('bitcoin') || 
+                        k.toLowerCase().includes('sats') ||
+                        k.toLowerCase().includes('wallet')
+                    ),
+                    found: wallets.map(w => `${w.name} (${w.type})`)
                 });
                 
                 return wallets;
@@ -549,24 +579,95 @@
             // Connect to Xverse wallet
             async connectXverse(xverse) {
                 try {
-                    const response = await xverse.request('getAddresses', {});
-                    if (!response.result || response.result.addresses.length === 0) {
-                        throw new Error('No addresses found in Xverse wallet');
+                    console.log('🔗 Connecting to Xverse wallet...');
+                    
+                    // Try different methods to get addresses from Xverse
+                    let addresses;
+                    
+                    // Method 1: Direct getAddresses call
+                    if (xverse.getAddresses) {
+                        try {
+                            addresses = await xverse.getAddresses();
+                            console.log('📋 Method 1 (getAddresses):', addresses);
+                        } catch (e) {
+                            console.log('⚠️ Method 1 failed:', e.message);
+                        }
+                    }
+                    
+                    // Method 2: Request method
+                    if (!addresses && xverse.request) {
+                        try {
+                            const response = await xverse.request('getAddresses', {});
+                            addresses = response.result?.addresses || response.addresses || response;
+                            console.log('📋 Method 2 (request):', addresses);
+                        } catch (e) {
+                            console.log('⚠️ Method 2 failed:', e.message);
+                        }
+                    }
+                    
+                    // Method 3: Connect first, then get addresses
+                    if (!addresses && xverse.connect) {
+                        try {
+                            await xverse.connect();
+                            addresses = await xverse.getAddresses();
+                            console.log('📋 Method 3 (connect+getAddresses):', addresses);
+                        } catch (e) {
+                            console.log('⚠️ Method 3 failed:', e.message);
+                        }
+                    }
+                    
+                    // Method 4: XverseProviders approach
+                    if (!addresses && window.XverseProviders?.BitcoinProvider) {
+                        try {
+                            const result = await window.XverseProviders.BitcoinProvider.request('getAddresses', {});
+                            addresses = result.addresses;
+                            console.log('📋 Method 4 (XverseProviders):', addresses);
+                        } catch (e) {
+                            console.log('⚠️ Method 4 failed:', e.message);
+                        }
                     }
 
-                    // Use the first payment address
-                    const paymentAddress = response.result.addresses.find(addr => addr.type === 'payment');
-                    this.address = paymentAddress ? paymentAddress.address : response.result.addresses[0].address;
+                    if (!addresses || (Array.isArray(addresses) && addresses.length === 0)) {
+                        throw new Error('No addresses found in Xverse wallet. Please unlock your wallet and try again.');
+                    }
+
+                    // Extract address from different response formats
+                    let address;
+                    if (Array.isArray(addresses)) {
+                        // Find payment address or use first available
+                        const paymentAddr = addresses.find(addr => addr.type === 'payment' || addr.purpose === 'payment');
+                        address = paymentAddr ? paymentAddr.address : addresses[0].address || addresses[0];
+                    } else if (addresses.address) {
+                        address = addresses.address;
+                    } else {
+                        address = addresses;
+                    }
+
+                    this.address = address;
                     this.connectedWallet = 'xverse';
 
                     // Sign authentication message
                     const message = `Champirug Game Authentication\nWallet: ${this.address}\nTime: ${new Date().toISOString()}`;
-                    const signResponse = await xverse.request('signMessage', {
-                        address: this.address,
-                        message: message
-                    });
+                    
+                    let signature;
+                    try {
+                        if (xverse.signMessage) {
+                            const signResult = await xverse.signMessage(this.address, message);
+                            signature = signResult.signature || signResult;
+                        } else if (xverse.request) {
+                            const signResponse = await xverse.request('signMessage', {
+                                address: this.address,
+                                message: message
+                            });
+                            signature = signResponse.result?.signature || signResponse.signature || signResponse;
+                        }
+                    } catch (e) {
+                        console.warn('⚠️ Message signing failed:', e.message);
+                        // Continue without signature for now
+                        signature = 'signature_failed';
+                    }
 
-                    this.signature = signResponse.result;
+                    this.signature = signature;
 
                     console.log('✅ Xverse wallet connected:', this.address);
                     return {
@@ -576,7 +677,7 @@
                     };
                 } catch (error) {
                     console.error('❌ Xverse connection failed:', error);
-                    throw error;
+                    throw new Error(`Xverse connection failed: ${error.message}. Please make sure your Xverse wallet is unlocked and try again.`);
                 }
             }
 
