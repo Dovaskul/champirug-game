@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MUSHROOM JUMP - DEBUG</title>
+    <link rel="stylesheet" href="css/style.css?v=20251006104700">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    <style>
+        .debug-info {
+            position: fixed;
+            top: 10px;
+            right: 10px;
+            background: rgba(0,0,0,0.8);
+            color: white;
+            padding: 10px;
+            font-size: 12px;
+            z-index: 1000;
+        }
+    </style>
+</head>
+<body>
+    <div class="debug-info">
+        <div>Status: <span id="debugStatus">Loading...</span></div>
+        <div>Jump Works: <span id="jumpStatus">Testing...</span></div>
+        <div>Player Found: <span id="playerStatus">Testing...</span></div>
+    </div>
+
+    <header>
+        <h1 class="game-title">MUSHROOM JUMP 8-BIT - DEBUG MODE</h1>
+        <p>Press SPACE to jump!</p>
+        <button id="muteButton" class="mute-button">🔊 MUSIC ON</button>
+    </header>
+
+    <main>
+        <div class="game-container" id="gameContainer">
+            <div class="ground"></div>
+            <div id="player" class="player" style="border: 2px solid red !important;"></div>
+            
+            <!-- UI Panel -->
+            <div class="ui-panel">
+                <div class="ui-item">
+                    <div class="ui-label">SCORE</div>
+                    <div id="score" class="ui-value">00000</div>
+                </div>
+                <div class="ui-item">
+                    <div class="ui-label">TIME</div>
+                    <div id="time" class="ui-value">0s</div>
+                </div>
+                <div class="ui-item">
+                    <div class="ui-label">HIGH</div>
+                    <div id="highScore" class="ui-value">00000</div>
+                </div>
+            </div>
+
+            <!-- Instructions Screen -->
+            <div id="instructions" class="instructions">
+                <div class="instruction-content">
+                    <h2>MUSHROOM JUMP - DEBUG</h2>
+                    <p>🍄 Jump over obstacles</p>
+                    <p>💰 Collect bitcoins for points</p>
+                    <p>🐻 Avoid the bears</p>
+                    <p><strong>Press SPACE to jump</strong></p>
+                    <button onclick="startGameDebug()">START GAME</button>
+                </div>
+            </div>
+
+            <!-- Game Over Screen -->
+            <div id="gameOver" class="game-over" style="display: none;">
+                <div class="game-over-content">
+                    <h2>GAME OVER</h2>
+                    <p>Final Score: <span id="finalScore">0</span></p>
+                    <button onclick="resetGameDebug()">PLAY AGAIN</button>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script src="js/audio.js?v=20251006104700"></script>
+    <script src="js/player_simple.js?v=20251006104700"></script>
+    <script src="js/enemies_simple.js?v=20251006104700"></script>
+    <script src="js/game_simple.js?v=20251006104700"></script>
+    <script>
+        let game;
+        
+        function updateDebugStatus(status) {
+            document.getElementById('debugStatus').textContent = status;
+        }
+        
+        function updateJumpStatus(status) {
+            document.getElementById('jumpStatus').textContent = status;
+        }
+        
+        function updatePlayerStatus(status) {
+            document.getElementById('playerStatus').textContent = status;
+        }
+        
+        function startGameDebug() {
+            console.log('🍄 DEBUG: Starting game...');
+            updateJumpStatus('Game starting...');
+            if (game) {
+                game.startGame();
+            }
+        }
+        
+        function resetGameDebug() {
+            console.log('🍄 DEBUG: Resetting game...');
+            if (game) {
+                game.resetGame();
+            }
+        }
+        
+        // Test jump manually
+        function testJump() {
+            console.log('🍄 DEBUG: Testing jump...');
+            if (game && game.player) {
+                const result = game.player.jump();
+                updateJumpStatus(result ? 'SUCCESS' : 'FAILED');
+                console.log('🍄 Jump result:', result);
+            } else {
+                updateJumpStatus('NO PLAYER');
+            }
+        }
+        
+        // Initialize game when page loads
+        document.addEventListener('DOMContentLoaded', () => {
+            console.log('🍄 DEBUG: Initializing...');
+            updateDebugStatus('Initializing...');
+            
+            try {
+                game = new MushroomGame();
+                updateDebugStatus('Game created');
+                
+                // Check player
+                if (game.player) {
+                    updatePlayerStatus('FOUND');
+                    console.log('🍄 Player element:', game.player.element);
+                } else {
+                    updatePlayerStatus('NOT FOUND');
+                }
+                
+                console.log('🍄 Game initialized successfully!');
+                updateDebugStatus('Ready');
+                
+                // Add manual jump test button to window
+                window.testJump = testJump;
+                
+            } catch (error) {
+                console.error('🍄 ERROR initializing game:', error);
+                updateDebugStatus('ERROR: ' + error.message);
+            }
+        });
+        
+        // Listen for SPACE key
+        document.addEventListener('keydown', (e) => {
+            if (e.code === 'Space') {
+                console.log('🍄 DEBUG: SPACE pressed');
+                updateJumpStatus('SPACE detected');
+                testJump();
+            }
+        });
+    </script>
+</body>
+</html>

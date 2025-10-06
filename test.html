@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Champirug - Test Version</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background: #87CEEB;
+            font-family: monospace;
+            overflow: hidden;
+        }
+        
+        #gameContainer {
+            position: relative;
+            width: 100vw;
+            height: 100vh;
+            background: linear-gradient(to bottom, #87CEEB 70%, #32CD32 70%);
+        }
+        
+        /* CHAMPIÑÓN SIMPLE PERO EFECTIVO */
+        .player {
+            position: absolute !important;
+            width: 24px !important;
+            height: 24px !important;
+            bottom: 0px !important;
+            left: 80px !important;
+            z-index: 100 !important;
+            
+            /* Champiñón usando solo texto y colores sólidos */
+            background: #FF0000;
+            border-radius: 50% 50% 0 0;
+            border: 2px solid #000;
+            
+            /* Puntos blancos con pseudo-elementos */
+        }
+        
+        .player::before {
+            content: '●●';
+            position: absolute;
+            top: 2px;
+            left: 2px;
+            color: white;
+            font-size: 8px;
+            letter-spacing: 4px;
+        }
+        
+        .player::after {
+            content: '';
+            position: absolute;
+            bottom: -8px;
+            left: 6px;
+            width: 12px;
+            height: 8px;
+            background: #F5F5DC;
+            border: 1px solid #000;
+        }
+        
+        /* OSO SIMPLE PERO RECONOCIBLE */
+        .simple-enemy {
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            bottom: 0px;
+            z-index: 10;
+            
+            background: #8B4513;
+            border-radius: 8px;
+            border: 1px solid #000;
+        }
+        
+        .simple-enemy::before {
+            content: '👁👁';
+            position: absolute;
+            top: 2px;
+            left: 1px;
+            font-size: 6px;
+        }
+        
+        .simple-enemy::after {
+            content: '●';
+            position: absolute;
+            top: 8px;
+            left: 8px;
+            font-size: 4px;
+        }
+        
+        /* Bitcoin mantiene el diseño que te gusta */
+        .simple-bitcoin {
+            position: absolute;
+            width: 16px;
+            height: 16px;
+            z-index: 5;
+            background: #FFD700;
+            border: 2px solid #000;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 8px;
+            font-weight: bold;
+        }
+        
+        .simple-bitcoin::before {
+            content: '₿';
+            color: #000;
+        }
+        
+        /* UI */
+        .ui-panel {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            background: rgba(0,0,0,0.8);
+            color: white;
+            padding: 10px;
+            border-radius: 5px;
+            font-size: 16px;
+        }
+        
+        .instructions {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0,0,0,0.9);
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+        }
+        
+        .game-over {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(255,0,0,0.9);
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div id="gameContainer">
+        <!-- UI Panel -->
+        <div class="ui-panel">
+            <div>Puntuación: <span id="score">0</span></div>
+            <div>Tiempo: <span id="time">0</span>s</div>
+            <div>Récord: <span id="highScore">0</span></div>
+        </div>
+
+        <!-- Player -->
+        <div id="player" class="player"></div>
+
+        <!-- Instructions -->
+        <div id="instructions" class="instructions">
+            <h2>🍄 CHAMPIRUG 🍄</h2>
+            <p><strong>ESPACIO</strong> = Saltar</p>
+            <p><strong>CLICK</strong> = Saltar</p>
+            <p>Evita osos 🐻 | Recoge bitcoins ₿</p>
+            <p><em>Presiona ESPACIO para empezar</em></p>
+        </div>
+
+        <!-- Game Over -->
+        <div id="gameOver" class="game-over">
+            <h2>¡GAME OVER!</h2>
+            <p>Puntuación Final: <span id="finalScore">0</span></p>
+            <p><em>Presiona ESPACIO para reiniciar</em></p>
+        </div>
+    </div>
+
+    <!-- Scripts con nueva versión -->
+    <script src="js/audio.js?v=20251006171500"></script>
+    <script src="js/player_simple.js?v=20251006171500"></script>
+    <script src="js/enemies_simple.js?v=20251006171500"></script>
+    <script src="js/game_simple.js?v=20251006171500"></script>
+</body>
+</html>

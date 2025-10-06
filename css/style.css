@@ -1,501 +1,361 @@
 @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
 
-/* Reset y configuración base */
+/* Reset */
 * {
     box-sizing: border-box;
+    margin: 0;
+    padding: 0;
 }
 
 body {
-    margin: 0;
-    padding: 0;
-    background: linear-gradient(180deg, #87CEEB 0%, #98FB98 100%);
     font-family: 'Press Start 2P', monospace;
+    background: #f0f0f0;
     display: flex;
     flex-direction: column;
     align-items: center;
     min-height: 100vh;
-    overflow: hidden;
+    color: #333;
 }
 
-/* Título del juego */
-.game-title {
-    color: #FF6B6B;
-    font-size: 24px;
-    margin: 20px 0;
-    text-shadow: 3px 3px 0px #000;
-    animation: glow 2s ease-in-out infinite alternate;
-}
-
-@keyframes glow {
-    from { text-shadow: 3px 3px 0px #000, 0 0 10px #FF6B6B; }
-    to { text-shadow: 3px 3px 0px #000, 0 0 20px #FF6B6B, 0 0 30px #FF6B6B; }
-}
-
-/* Contenedor del juego - Fondo 8-bit */
-.game-container {
-    width: 800px;
-    height: 400px;
-    background: 
-        repeating-linear-gradient(
-            0deg,
-            #87CEEB 0px, #87CEEB 8px,
-            #ADD8E6 8px, #ADD8E6 16px
-        ),
-        repeating-linear-gradient(
-            90deg,
-            transparent 0px, transparent 16px,
-            rgba(255,255,255,0.1) 16px, rgba(255,255,255,0.1) 32px
-        );
-    border: 4px solid #000;
+/* Header */
+header {
+    text-align: center;
+    padding: 20px;
     position: relative;
-    overflow: hidden;
-    box-shadow: inset 4px 4px 0px #FFF, inset -4px -4px 0px #333, 0 0 20px rgba(0,0,0,0.7);
-    image-rendering: pixelated;
 }
 
-.game-container::before {
-    content: '';
-    position: absolute;
-    bottom: 80px;
-    left: 0;
-    width: 100%;
+.game-title {
+    font-size: 20px;
+    color: #ff6b35;
+    text-shadow: 2px 2px 0px #000;
+    margin-bottom: 10px;
+}
+
+header p {
+    font-size: 8px;
+    color: #666;
+    margin-bottom: 15px;
+}
+
+/* Botón de música */
+.mute-button {
+    background: #4CAF50;
+    color: white;
+    border: 2px solid #000;
+    padding: 8px 12px;
+    font-family: inherit;
+    font-size: 8px;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.mute-button:hover {
+    background: #45a049;
+}
+
+.mute-button.muted {
+    background: #f44336;
+}
+
+/* Contenedor del juego */
+.game-container {
+    position: relative;
+    width: 800px;
     height: 200px;
-    background: repeating-linear-gradient(
-        180deg,
-        #228B22 0px, #228B22 8px,
-        #32CD32 8px, #32CD32 16px,
-        #006400 16px, #006400 24px,
-        #228B22 24px, #228B22 32px
-    );
-    image-rendering: pixelated;
-    opacity: 0.3;
+    background: linear-gradient(to bottom, #87CEEB 0%, #87CEEB 70%, #90EE90 70%, #32CD32 100%);
+    border: 3px solid #000;
+    overflow: hidden;
+    margin: 0 auto;
 }
 
-.game-container::after {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100px;
-    background: repeating-linear-gradient(
-        90deg,
-        rgba(255,255,255,0.1) 0px, rgba(255,255,255,0.1) 2px,
-        transparent 2px, transparent 8px
-    );
-    image-rendering: pixelated;
-}
-
-/* Suelo del juego - Pixelado 8-bit */
+/* Suelo */
 .ground {
     position: absolute;
     bottom: 0;
     width: 100%;
-    height: 80px;
-    background: repeating-linear-gradient(
-        90deg,
-        #654321 0px, #654321 8px,
-        #8B4513 8px, #8B4513 16px,
-        #A0522D 16px, #A0522D 24px,
-        #654321 24px, #654321 32px
-    );
-    border-top: 4px solid #2F1B0C;
-    image-rendering: pixelated;
-    box-shadow: inset 0 4px 0px #CD853F, inset 0 -4px 0px #2F1B0C;
-    position: relative;
+    height: 60px;
+    background: 
+        repeating-linear-gradient(
+            0deg,
+            #228B22 0px,
+            #228B22 2px,
+            #32CD32 2px,
+            #32CD32 4px
+        );
+    border-top: 2px solid #000;
 }
 
-.ground::before {
-    content: '';
+/* JUGADOR - CHAMPIÑÓN PIXEL ART AUTÉNTICO */
+.player {
+    position: absolute !important;
+    width: 32px !important;
+    height: 32px !important;
+    bottom: 0px !important;
+    left: 80px !important;
+    z-index: 100 !important;
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    
+    /* Champiñón dibujado pixel por pixel usando box-shadow */
+    background: transparent;
+    box-shadow: 
+        /* Fila 1 - Parte superior del sombrero */
+        6px 2px 0 0 #8B0000, 8px 2px 0 0 #8B0000, 10px 2px 0 0 #8B0000, 12px 2px 0 0 #8B0000,
+        14px 2px 0 0 #8B0000, 16px 2px 0 0 #8B0000, 18px 2px 0 0 #8B0000, 20px 2px 0 0 #8B0000,
+        /* Fila 2 - Sombrero con puntos blancos */
+        4px 4px 0 0 #FF0000, 6px 4px 0 0 #FFFFFF, 8px 4px 0 0 #FF0000, 10px 4px 0 0 #FF0000,
+        12px 4px 0 0 #FFFFFF, 14px 4px 0 0 #FF0000, 16px 4px 0 0 #FF0000, 18px 4px 0 0 #FFFFFF,
+        20px 4px 0 0 #FF0000, 22px 4px 0 0 #FF0000,
+        /* Fila 3 - Más sombrero */
+        2px 6px 0 0 #FF0000, 4px 6px 0 0 #FF0000, 6px 6px 0 0 #FF0000, 8px 6px 0 0 #FF0000,
+        10px 6px 0 0 #FF0000, 12px 6px 0 0 #FF0000, 14px 6px 0 0 #FF0000, 16px 6px 0 0 #FF0000,
+        18px 6px 0 0 #FF0000, 20px 6px 0 0 #FF0000, 22px 6px 0 0 #FF0000, 24px 6px 0 0 #FF0000,
+        /* Fila 4 - Borde del sombrero */
+        2px 8px 0 0 #8B0000, 4px 8px 0 0 #8B0000, 6px 8px 0 0 #8B0000, 8px 8px 0 0 #8B0000,
+        10px 8px 0 0 #8B0000, 12px 8px 0 0 #8B0000, 14px 8px 0 0 #8B0000, 16px 8px 0 0 #8B0000,
+        18px 8px 0 0 #8B0000, 20px 8px 0 0 #8B0000, 22px 8px 0 0 #8B0000, 24px 8px 0 0 #8B0000,
+        /* Filas 5-8 - Tallo del champiñón */
+        10px 10px 0 0 #F5F5DC, 12px 10px 0 0 #F5F5DC, 14px 10px 0 0 #F5F5DC, 16px 10px 0 0 #F5F5DC,
+        10px 12px 0 0 #F5F5DC, 12px 12px 0 0 #F5F5DC, 14px 12px 0 0 #F5F5DC, 16px 12px 0 0 #F5F5DC,
+        10px 14px 0 0 #F5F5DC, 12px 14px 0 0 #F5F5DC, 14px 14px 0 0 #F5F5DC, 16px 14px 0 0 #F5F5DC,
+        10px 16px 0 0 #E6D3A3, 12px 16px 0 0 #E6D3A3, 14px 16px 0 0 #E6D3A3, 16px 16px 0 0 #E6D3A3;
+        
+    /* Renderado pixelado perfecto */
+    image-rendering: pixelated;
+    image-rendering: -moz-crisp-edges;
+    image-rendering: crisp-edges;
+    
+    /* Bordes cuadrados para mantener estética pixelada */
+    border-radius: 0px;
+    
+    /* Asegurar que sea visible */
+    transform: none !important;
+    clip: none !important;
+    overflow: visible !important;
+}
+
+/* Clase para hacer aún más visible al jugador */
+.player-visible {
+    background: 
+        /* Sombrero rojo MUY brillante */
+        radial-gradient(circle at 20px 15px, #FF0000 0%, #FF0000 65%, transparent 66%),
+        /* Puntos blancos GRANDES */
+        radial-gradient(circle at 8px 5px, #FFFFFF 0%, #FFFFFF 30%, transparent 31%),
+        radial-gradient(circle at 32px 7px, #FFFFFF 0%, #FFFFFF 25%, transparent 26%),
+        radial-gradient(circle at 12px 22px, #FFFFFF 0%, #FFFFFF 20%, transparent 21%),
+        radial-gradient(circle at 28px 20px, #FFFFFF 0%, #FFFFFF 18%, transparent 19%),
+        radial-gradient(circle at 20px 12px, #FFFFFF 0%, #FFFFFF 12%, transparent 13%),
+        /* Tallo amarillo claro MUY visible */
+        linear-gradient(to bottom, transparent 0%, transparent 30%, #FFFF99 30%, #FFFF99 100%);
+    border: 3px solid #000 !important;
+    box-shadow: 0 0 5px rgba(255, 0, 0, 0.5);
+}
+
+.player.jumping {
+    animation: jump-squash 0.1s ease;
+}
+
+.player.player-dead {
+    animation: death-spin 0.5s ease-out;
+    opacity: 0.7;
+}
+
+@keyframes jump-squash {
+    0% { transform: scaleY(1); }
+    50% { transform: scaleY(0.8) scaleX(1.1); }
+    100% { transform: scaleY(1); }
+}
+
+@keyframes death-spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(180deg); }
+}
+
+/* Enemigos - Osos pixelados */
+.enemy {
+    position: absolute;
+    width: 40px;
+    height: 40px;
+    bottom: 0px;
+    z-index: 5;
+}
+
+.simple-enemy {
+    background: transparent;
+    /* Oso dibujado pixel por pixel usando box-shadow */
+    box-shadow: 
+        /* Fila 1 - Orejas */
+        4px 2px 0 0 #654321, 6px 2px 0 0 #654321, 24px 2px 0 0 #654321, 26px 2px 0 0 #654321,
+        /* Fila 2 - Orejas y parte superior de cabeza */
+        2px 4px 0 0 #654321, 4px 4px 0 0 #8B4513, 6px 4px 0 0 #654321, 8px 4px 0 0 #8B4513,
+        10px 4px 0 0 #8B4513, 12px 4px 0 0 #8B4513, 14px 4px 0 0 #8B4513, 16px 4px 0 0 #8B4513,
+        18px 4px 0 0 #8B4513, 20px 4px 0 0 #8B4513, 22px 4px 0 0 #654321, 24px 4px 0 0 #8B4513,
+        26px 4px 0 0 #654321, 28px 4px 0 0 #654321,
+        /* Fila 3 - Cabeza completa */
+        4px 6px 0 0 #8B4513, 6px 6px 0 0 #8B4513, 8px 6px 0 0 #8B4513, 10px 6px 0 0 #8B4513,
+        12px 6px 0 0 #8B4513, 14px 6px 0 0 #8B4513, 16px 6px 0 0 #8B4513, 18px 6px 0 0 #8B4513,
+        20px 6px 0 0 #8B4513, 22px 6px 0 0 #8B4513, 24px 6px 0 0 #8B4513, 26px 6px 0 0 #8B4513,
+        /* Fila 4 - Ojos */
+        6px 8px 0 0 #8B4513, 8px 8px 0 0 #FFFFFF, 10px 8px 0 0 #8B4513, 12px 8px 0 0 #8B4513,
+        14px 8px 0 0 #8B4513, 16px 8px 0 0 #8B4513, 18px 8px 0 0 #8B4513, 20px 8px 0 0 #FFFFFF,
+        22px 8px 0 0 #8B4513, 24px 8px 0 0 #8B4513,
+        /* Fila 5 - Pupilas y hocico */
+        8px 10px 0 0 #000000, 12px 10px 0 0 #DEB887, 14px 10px 0 0 #DEB887, 16px 10px 0 0 #DEB887,
+        18px 10px 0 0 #DEB887, 20px 10px 0 0 #000000,
+        /* Fila 6 - Nariz */
+        14px 12px 0 0 #000000, 16px 12px 0 0 #000000,
+        /* Filas 7-10 - Cuerpo */
+        8px 14px 0 0 #8B4513, 10px 14px 0 0 #8B4513, 12px 14px 0 0 #8B4513, 14px 14px 0 0 #8B4513,
+        16px 14px 0 0 #8B4513, 18px 14px 0 0 #8B4513, 20px 14px 0 0 #8B4513, 22px 14px 0 0 #8B4513,
+        6px 16px 0 0 #8B4513, 8px 16px 0 0 #654321, 10px 16px 0 0 #654321, 12px 16px 0 0 #654321,
+        14px 16px 0 0 #654321, 16px 16px 0 0 #654321, 18px 16px 0 0 #654321, 20px 16px 0 0 #654321,
+        22px 16px 0 0 #654321, 24px 16px 0 0 #8B4513,
+        8px 18px 0 0 #654321, 10px 18px 0 0 #654321, 12px 18px 0 0 #654321, 14px 18px 0 0 #654321,
+        16px 18px 0 0 #654321, 18px 18px 0 0 #654321, 20px 18px 0 0 #654321, 22px 18px 0 0 #654321;
+        
+    border-radius: 0px;
+    image-rendering: pixelated;
+    animation: enemy-walk 0.5s infinite;
+}
+
+@keyframes enemy-walk {
+    0%, 100% { transform: translateY(0px); }
+    50% { transform: translateY(-2px); }
+}
+
+/* Bitcoins */
+.bitcoin {
+    position: absolute;
+    width: 30px;
+    height: 30px;
+    z-index: 5;
+}
+
+.simple-bitcoin {
+    background: 
+        /* Gradiente pixelado dorado */
+        conic-gradient(from 0deg, 
+            #FFD700 0deg, #FFD700 90deg,
+            #FFA500 90deg, #FFA500 180deg,
+            #FF8C00 180deg, #FF8C00 270deg,
+            #FFD700 270deg, #FFD700 360deg);
+    
+    /* Sombras para efecto 8-bit */
+    box-shadow: 
+        inset -2px -2px 0px rgba(0,0,0,0.3),
+        inset 2px 2px 0px rgba(255,255,255,0.4),
+        0 0 0 2px #B8860B,
+        0 0 0 3px #000;
+        
+    /* Forma ligeramente cuadrada para estética pixelada */
+    border-radius: 30%;
+    font-size: 14px;
+    font-weight: bold;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    image-rendering: pixelated;
+    animation: bitcoin-spin 1s linear infinite;
+}
+
+.simple-bitcoin::after {
+    content: '₿';
+    color: #8B4513;
+    font-weight: bold;
+}
+
+@keyframes bitcoin-spin {
+    0% { transform: rotateY(0deg); }
+    100% { transform: rotateY(360deg); }
+}
+
+/* UI Panel */
+.ui-panel {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    z-index: 20;
+    display: flex;
+    gap: 20px;
+}
+
+.ui-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.ui-label {
+    font-size: 8px;
+    color: #333;
+    margin-bottom: 5px;
+}
+
+.ui-value {
+    font-size: 12px;
+    color: #ff6b35;
+    text-shadow: 1px 1px 0px #000;
+}
+
+/* Pantallas de instrucciones y game over */
+.instructions, .game-over {
     position: absolute;
     top: 0;
     left: 0;
     width: 100%;
-    height: 20px;
-    background: repeating-linear-gradient(
-        90deg,
-        #32CD32 0px, #32CD32 4px,
-        #228B22 4px, #228B22 8px,
-        #006400 8px, #006400 12px,
-        #228B22 12px, #228B22 16px
-    );
-    image-rendering: pixelated;
-}
-
-/* Jugador (Champiñón) - Pixelado 8-bit */
-.player {
-    position: absolute;
-    bottom: 80px;
-    left: 100px;
-    width: 40px;
-    height: 50px;
-    background: linear-gradient(0deg, 
-        #FF4444 0%, #FF4444 10%,
-        #FF6B6B 10%, #FF6B6B 90%,
-        #FFB3B3 90%, #FFB3B3 100%);
-    border: 3px solid #000;
-    image-rendering: pixelated;
-    image-rendering: -moz-crisp-edges;
-    image-rendering: crisp-edges;
-    transition: bottom 0.1s ease-out;
-    z-index: 10;
-    box-shadow: inset 2px 2px 0px #FFB3B3, inset -2px -2px 0px #CC3333;
-}
-
-.player::before {
-    content: '';
-    position: absolute;
-    top: -12px;
-    left: 3px;
-    width: 34px;
-    height: 28px;
-    background: linear-gradient(45deg,
-        #8B4513 0%, #8B4513 25%,
-        #A0522D 25%, #A0522D 50%,
-        #CD853F 50%, #CD853F 75%,
-        #DEB887 75%, #DEB887 100%);
-    border: 2px solid #000;
-    image-rendering: pixelated;
-    box-shadow: inset 2px 2px 0px #DEB887, inset -2px -2px 0px #654321;
-}
-
-.player::after {
-    content: '';
-    position: absolute;
-    top: 18px;
-    left: 12px;
-    width: 16px;
-    height: 8px;
-    background: linear-gradient(90deg,
-        #000 0%, #000 30%,
-        #FFF 30%, #FFF 35%,
-        #000 35%, #000 65%,
-        #FFF 65%, #FFF 70%,
-        #000 70%, #000 100%);
-    image-rendering: pixelated;
-    border-radius: 0;
-}
-
-.player.jumping {
-    animation: jump 0.5s ease-out;
-}
-
-@keyframes jump {
-    0% { bottom: 80px; }
-    50% { bottom: 180px; }
-    100% { bottom: 80px; }
-}
-
-/* Enemigos - Osos Pixelados 8-bit */
-.enemy {
-    position: absolute;
-    bottom: 80px;
-    right: -60px;
-    width: 50px;
-    height: 40px;
-    background: linear-gradient(45deg,
-        #4A4A4A 0%, #4A4A4A 25%,
-        #654321 25%, #654321 50%,
-        #8B4513 50%, #8B4513 75%,
-        #A0522D 75%, #A0522D 100%);
-    border: 3px solid #000;
-    image-rendering: pixelated;
-    animation: moveLeft 3s linear infinite, bearWalk 0.5s infinite;
-    z-index: 5;
-    box-shadow: inset 2px 2px 0px #CD853F, inset -2px -2px 0px #2F1B0C;
-}
-
-.enemy::before {
-    content: '';
-    position: absolute;
-    top: 2px;
-    left: 8px;
-    width: 30px;
-    height: 20px;
-    background: linear-gradient(0deg,
-        #000 0%, #000 15%,
-        #8B4513 15%, #8B4513 85%,
-        #A0522D 85%, #A0522D 100%);
-    border: 2px solid #000;
-    image-rendering: pixelated;
-}
-
-.enemy::after {
-    content: '';
-    position: absolute;
-    top: 8px;
-    left: 15px;
-    width: 16px;
-    height: 6px;
-    background: linear-gradient(90deg,
-        #FF0000 0%, #FF0000 25%,
-        #000 25%, #000 40%,
-        #FF0000 40%, #FF0000 60%,
-        #000 60%, #000 75%,
-        #FF0000 75%, #FF0000 100%);
-    image-rendering: pixelated;
-}
-
-@keyframes bearWalk {
-    0% { transform: scaleX(1); }
-    50% { transform: scaleX(0.95); }
-    100% { transform: scaleX(1); }
-}
-
-/* Enemigos especiales */
-.enemy.flying-enemy {
-    background: linear-gradient(45deg,
-        #800080 0%, #800080 25%,
-        #9932CC 25%, #9932CC 50%,
-        #BA55D3 50%, #BA55D3 75%,
-        #DDA0DD 75%, #DDA0DD 100%);
-    animation: moveLeft 2s linear infinite, fly 1s ease-in-out infinite;
-}
-
-.enemy.big-enemy {
-    box-shadow: inset 3px 3px 0px #CD853F, inset -3px -3px 0px #2F1B0C, 0 0 10px rgba(139,69,19,0.5);
-    filter: hue-rotate(20deg) brightness(1.2);
-}
-
-@keyframes fly {
-    0% { bottom: 140px; transform: translateY(0px); }
-    50% { bottom: 140px; transform: translateY(-8px); }
-    100% { bottom: 140px; transform: translateY(0px); }
-}
-
-/* Indicador de carga de salto */
-.jump-charge-indicator {
-    position: absolute;
-    bottom: 140px;
-    left: 95px;
-    width: 50px;
-    height: 8px;
-    background: rgba(0,0,0,0.3);
-    border: 2px solid #000;
-    z-index: 15;
-    image-rendering: pixelated;
-}
-
-.jump-charge-bar {
     height: 100%;
-    background: linear-gradient(90deg, #00FF00 0%, #FFFF00 50%, #FF0000 100%);
-    width: 0%;
-    transition: width 0.1s ease-out;
-    image-rendering: pixelated;
+    background: rgba(0, 0, 0, 0.8);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 100;
 }
 
-/* Bitcoins - Pixelados 8-bit */
-.bitcoin {
-    position: absolute;
-    bottom: 120px;
-    right: -40px;
-    width: 30px;
-    height: 30px;
-    background: linear-gradient(45deg,
-        #FFD700 0%, #FFD700 25%,
-        #FFA500 25%, #FFA500 50%,
-        #FFFF00 50%, #FFFF00 75%,
-        #DAA520 75%, #DAA520 100%);
+.instruction-content, .game-over-content {
+    background: #fff;
     border: 3px solid #000;
-    image-rendering: pixelated;
-    animation: moveLeft 4s linear infinite, bitcoinFloat 2s ease-in-out infinite;
-    z-index: 5;
-    box-shadow: 0 0 15px #FFD700, inset 2px 2px 0px #FFFF00, inset -2px -2px 0px #B8860B;
-}
-
-.bitcoin::before {
-    content: '';
-    position: absolute;
-    top: 6px;
-    left: 8px;
-    width: 14px;
-    height: 18px;
-    background: linear-gradient(0deg,
-        #000 0%, #000 20%,
-        #FFD700 20%, #FFD700 30%,
-        #000 30%, #000 35%,
-        #FFD700 35%, #FFD700 65%,
-        #000 65%, #000 70%,
-        #FFD700 70%, #FFD700 80%,
-        #000 80%, #000 100%);
-    image-rendering: pixelated;
-}
-
-@keyframes bitcoinFloat {
-    0% { transform: translateY(0px) scale(1); }
-    50% { transform: translateY(-5px) scale(1.1); }
-    100% { transform: translateY(0px) scale(1); }
-}
-
-/* Animaciones */
-@keyframes moveLeft {
-    from { right: -60px; }
-    to { right: 860px; }
-}
-
-@keyframes spin {
-    from { transform: rotate(0deg); }
-    to { transform: rotate(360deg); }
-}
-
-/* Interfaz de usuario */
-.ui {
-    position: absolute;
-    top: 10px;
-    left: 10px;
-    color: #000;
-    font-size: 12px;
-    text-shadow: 1px 1px 0px #FFF;
-    background: rgba(255,255,255,0.7);
-    padding: 10px;
-    border: 2px solid #000;
-    border-radius: 5px;
-}
-
-.high-score {
-    position: absolute;
-    top: 10px;
-    right: 10px;
-    color: #000;
-    font-size: 12px;
-    text-shadow: 1px 1px 0px #FFF;
-    background: rgba(255,255,255,0.7);
-    padding: 10px;
-    border: 2px solid #000;
-    border-radius: 5px;
-}
-
-/* Pantallas de información */
-.instructions {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
+    padding: 30px;
     text-align: center;
-    color: #000;
+    max-width: 400px;
+}
+
+.instruction-content h2, .game-over-content h2 {
     font-size: 16px;
-    text-shadow: 2px 2px 0px #FFF;
-    background: rgba(255,255,255,0.9);
-    padding: 20px;
-    border: 4px solid #000;
-    border-radius: 10px;
-    z-index: 20;
-    animation: pulse 2s infinite;
+    color: #ff6b35;
+    margin-bottom: 20px;
 }
 
-@keyframes pulse {
-    0% { transform: translate(-50%, -50%) scale(1); }
-    50% { transform: translate(-50%, -50%) scale(1.05); }
-    100% { transform: translate(-50%, -50%) scale(1); }
+.instruction-content p, .game-over-content p {
+    font-size: 8px;
+    margin: 10px 0;
+    line-height: 1.5;
 }
 
-.game-over {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    text-align: center;
-    color: #FF0000;
-    font-size: 20px;
-    text-shadow: 2px 2px 0px #000;
-    background: rgba(255,255,255,0.95);
-    padding: 20px;
-    border: 4px solid #FF0000;
-    border-radius: 10px;
-    display: none;
-    z-index: 20;
-    animation: shake 0.5s ease-in-out;
-}
-
-@keyframes shake {
-    0%, 100% { transform: translate(-50%, -50%); }
-    10%, 30%, 50%, 70%, 90% { transform: translate(-55%, -50%); }
-    20%, 40%, 60%, 80% { transform: translate(-45%, -50%); }
-}
-
-.controls {
+.instruction-content button, .game-over-content button {
+    background: #4CAF50;
+    color: white;
+    border: 2px solid #000;
+    padding: 10px 20px;
+    font-family: inherit;
+    font-size: 10px;
+    cursor: pointer;
     margin-top: 20px;
-    color: #333;
-    font-size: 12px;
-    text-align: center;
-    max-width: 800px;
-    background: rgba(255,255,255,0.8);
-    padding: 10px;
-    border: 2px solid #333;
-    border-radius: 5px;
+    transition: background 0.2s;
 }
 
-/* Efectos especiales */
-.collect-effect {
-    position: absolute;
-    color: #FFD700;
-    font-size: 20px;
-    font-weight: bold;
-    pointer-events: none;
-    animation: collectFloat 1s ease-out forwards;
-    z-index: 15;
-}
-
-@keyframes collectFloat {
-    0% { 
-        opacity: 1;
-        transform: translateY(0px);
-    }
-    100% { 
-        opacity: 0;
-        transform: translateY(-50px);
-    }
+.instruction-content button:hover, .game-over-content button:hover {
+    background: #45a049;
 }
 
 /* Responsive */
 @media (max-width: 850px) {
     .game-container {
-        width: 95vw;
+        width: 100vw;
         max-width: 800px;
     }
     
     .game-title {
-        font-size: 18px;
-    }
-    
-    .controls {
-        font-size: 10px;
-        padding: 5px;
-        margin: 10px;
-    }
-    
-    .instructions, .game-over {
-        font-size: 14px;
-        padding: 15px;
-    }
-}
-
-@media (max-width: 500px) {
-    .game-title {
-        font-size: 14px;
-        margin: 10px 0;
-    }
-    
-    .ui, .high-score {
-        font-size: 10px;
-        padding: 5px;
-    }
-    
-    .instructions, .game-over {
-        font-size: 12px;
-        padding: 10px;
-    }
-}
-
-/* Modo oscuro automático */
-@media (prefers-color-scheme: dark) {
-    body {
-        background: linear-gradient(180deg, #2C3E50 0%, #27AE60 100%);
-    }
-    
-    .controls {
-        background: rgba(0,0,0,0.8);
-        color: #FFF;
-        border-color: #FFF;
+        font-size: 16px;
     }
 }

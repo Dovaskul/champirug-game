@@ -1,0 +1,125 @@
+<!DOCTYPE html><!DOCT    <link rel="stylesheet" href="css/style_new.css">
+
+<html lang="en"></head>
+
+<head><body>
+
+    <meta charset="UTF-8">    <div class="game-title">MUSHROOM JUMP 8-BIT</div>
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">    
+
+    <title>MUSHROOM JUMP 8-BIT</title>    <div class="game-container" id="gameContainer">
+
+    <link rel="stylesheet" href="css/style.css">        <div class="ground"></div>
+
+</head>        <div id="player"></div>>
+
+<body><html lang="en">
+
+    <header><head>
+
+        <h1 class="game-title">MUSHROOM JUMP 8-BIT</h1>    <meta charset="UTF-8">
+
+        <p>Hold SPACE for higher jumps!</p>    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+        <button id="muteButton" class="mute-button">🔊 MUSIC ON</button>    <title>Mushroom Jump 8-bit</title>
+
+    </header>    <link rel="stylesheet" href="css/style.css">
+
+</head>
+
+    <main><body>
+
+        <div class="game-container" id="gameContainer">    <h1 class="game-title">MUSHROOM JUMP 8-BIT</h1>
+
+            <div class="ground"></div>    
+
+            <div class="player" id="player"></div>    <div class="game-container" id="gameContainer">
+
+        <div class="ground"></div>
+
+            <div class="ui-panel">        <div class="player" id="player"></div>
+
+                <div class="ui-item">        
+
+                    <span class="ui-label">Score:</span>        <div class="ui">
+
+                    <span id="score" class="ui-value">0</span>            <div>Score: <span id="score">0</span></div>
+
+                </div>            <div>Time: <span id="time">0</span>s</div>
+
+                <div class="ui-item">        </div>
+
+                    <span class="ui-label">Time:</span>        
+
+                    <span id="time" class="ui-value">0</span>        <div class="high-score">
+
+                </div>            <div>High Score: <span id="highScore">0</span></div>
+
+                <div class="ui-item">        </div>
+
+                    <span class="ui-label">High Score:</span>        
+
+                    <span id="highScore" class="ui-value">0</span>        <div class="instructions" id="instructions">
+
+                </div>            <div>Jump to avoid the bears!</div>
+
+            </div>            <div>Collect bitcoins for extra points!</div>
+
+            <div><br>Press SPACE or CLICK to jump</div>
+
+            <div id="instructions" class="instructions">            <div><br>Press SPACE to start</div>
+
+                <div class="instruction-content">        </div>
+
+                    <h2>HOW TO PLAY</h2>        
+
+                    <p>🍄 Jump to avoid the bears!</p>        <div class="game-over" id="gameOver">
+
+                    <p>💰 Collect bitcoins for points!</p>            <div>GAME OVER!</div>
+
+                    <p>🎮 Hold SPACE longer for higher jumups</p>            <div><br>Final Score: <span id="finalScore">0</span></div>
+
+                    <p>📱 Tap and hold on mobile</p>            <div><br>Press SPACE to restart</div>
+
+                    <button onclick="window.game.startGame()">START GAME</button>        </div>
+
+                </div>    </div>
+
+            </div>    
+
+    <div class="controls">
+
+            <div id="gameOver" class="game-over" style="display: none;">        <p>Controls: SPACE or CLICK to jump | Survive +1000pts/sec | Bitcoin +100000pts</p>
+
+                <div class="game-over-content">    </div>
+
+                    <h2>GAME OVER</h2>
+
+                    <p>Final Score: <span id="finalScore">0</span></p>    <script src="js/game_new.js"></script>
+
+                    <button onclick="window.game.resetGame()">PLAY AGAIN</button>    <script>
+
+                </div>        // Initialize game when page loads
+
+            </div>        document.addEventListener('DOMContentLoaded', () => {
+
+        </div>            window.game = new ChampignonGame();
+
+    </main>        });
+
+    </script>
+
+    <script src="js/audio.js"></script></body>
+
+    <script src="js/player_simple.js"></script></html>
+    <script src="js/enemies_simple.js"></script>
+    <script src="js/game_simple.js"></script>
+    <script>
+        // Initialize game when page loads
+        document.addEventListener('DOMContentLoaded', () => {
+            window.game = new MushroomGame();
+        });
+    </script>
+</body>
+</html>

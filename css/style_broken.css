@@ -1,0 +1,590 @@
+@import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');@import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
+
+
+
+/* Reset *//* Reset y configuración base */
+
+* {* {
+
+    box-sizing: border-box;    box-sizing: border-box;
+
+    margin: 0;}
+
+    padding: 0;
+
+}body {
+
+    margin: 0;
+
+body {    padding: 0;
+
+    font-family: 'Press Start 2P', monospace;    background: linear-gradient(180deg, #87CEEB 0%, #98FB98 100%);
+
+    background: #f0f0f0;    font-family: 'Press Start 2P', monospace;
+
+    display: flex;    display: flex;
+
+    flex-direction: column;    flex-direction: column;
+
+    align-items: center;    align-items: center;
+
+    min-height: 100vh;    min-height: 100vh;
+
+    color: #333;    overflow: hidden;
+
+}}
+
+
+
+/* Header *//* Título del juego */
+
+header {.game-title {
+
+    text-align: center;    color: #FF6B6B;
+
+    padding: 20px;    font-size: 24px;
+
+    position: relative;    margin: 20px 0;
+
+}    text-shadow: 3px 3px 0px #000;
+
+    animation: glow 2s ease-in-out infinite alternate;
+
+.game-title {}
+
+    font-size: 20px;
+
+    color: #ff6b35;@keyframes glow {
+
+    text-shadow: 2px 2px 0px #000;    from { text-shadow: 3px 3px 0px #000, 0 0 10px #FF6B6B; }
+
+    margin-bottom: 10px;    to { text-shadow: 3px 3px 0px #000, 0 0 20px #FF6B6B, 0 0 30px #FF6B6B; }
+
+}}
+
+
+
+header p {/* Contenedor del juego */
+
+    font-size: 8px;.game-container {
+
+    color: #666;    width: 800px;
+
+    margin-bottom: 15px;    height: 400px;
+
+}    background: linear-gradient(180deg, #87CEEB 0%, #32CD32 80%, #228B22 100%);
+
+    border: 4px solid #000;
+
+/* Botón de música */    position: relative;
+
+.mute-button {    overflow: hidden;
+
+    background: #4CAF50;    image-rendering: pixelated;
+
+    color: white;}
+
+    border: 2px solid #000;
+
+    padding: 8px 12px;/* Suelo pixelado estilo Chrome Dino */
+
+    font-family: inherit;.ground {
+
+    font-size: 8px;    position: absolute;
+
+    cursor: pointer;    bottom: 0;
+
+    transition: background 0.2s;    width: 100%;
+
+}    height: 12px;
+
+    background: repeating-linear-gradient(
+
+.mute-button:hover {        90deg,
+
+    background: #45a049;        #654321 0px, #654321 4px,
+
+}        #8B4513 4px, #8B4513 8px
+
+    );
+
+.mute-button.muted {    border-top: 2px solid #000;
+
+    background: #f44336;    image-rendering: pixelated;
+
+}}
+
+
+
+/* Contenedor del juego *//* CHAMPIÑÓN - Sprite auténtico 8-bit */
+
+.game-container {#player {
+
+    position: relative;    position: absolute;
+
+    width: 800px;    bottom: 12px;
+
+    height: 200px;    left: 100px;
+
+    background: linear-gradient(to bottom, #87CEEB 0%, #87CEEB 70%, #90EE90 70%, #32CD32 100%);    width: 32px;
+
+    border: 3px solid #000;    height: 32px;
+
+    overflow: hidden;    z-index: 10;
+
+    margin: 0 auto;    image-rendering: pixelated;
+
+}    transition: none;
+
+    
+
+/* Suelo */    /* Cuerpo principal del champiñón */
+
+.ground {    background: 
+
+    position: absolute;        /* Sombrero rojo */
+
+    bottom: 0;        linear-gradient(0deg, 
+
+    width: 100%;            transparent 0%, transparent 40%,
+
+    height: 60px;            #FF0000 40%, #FF0000 70%,
+
+    background:             #CC0000 70%, #CC0000 100%
+
+        repeating-linear-gradient(        ),
+
+            0deg,        /* Tallo beige */
+
+            #228B22 0px,        linear-gradient(0deg,
+
+            #228B22 2px,            #F5DEB3 0%, #F5DEB3 45%,
+
+            #32CD32 2px,            transparent 45%
+
+            #32CD32 4px        );
+
+        );    background-size: 32px 32px;
+
+    border-top: 2px solid #000;    border: 1px solid #000;
+
+}}
+
+
+
+/* Jugador - Champiñón pixelado auténtico */#player::before {
+
+.player {    content: '';
+
+    position: absolute;    position: absolute;
+
+    width: 40px;    top: 4px;
+
+    height: 40px;    left: 0;
+
+    bottom: 0px;    width: 32px;
+
+    left: 80px;    height: 20px;
+
+    z-index: 10;    background: 
+
+    background:         /* Puntos blancos del sombrero */
+
+        /* Sombrero del champiñón */        radial-gradient(circle at 8px 8px, #FFFFFF 2px, transparent 2px),
+
+        radial-gradient(circle at 20px 15px, #FF0000 0%, #FF0000 60%, transparent 61%),        radial-gradient(circle at 20px 6px, #FFFFFF 2px, transparent 2px),
+
+        /* Puntos blancos del sombrero */        radial-gradient(circle at 24px 12px, #FFFFFF 1px, transparent 1px),
+
+        radial-gradient(circle at 12px 8px, #FFFFFF 0%, #FFFFFF 20%, transparent 21%),        /* Fondo rojo del sombrero */
+
+        radial-gradient(circle at 28px 10px, #FFFFFF 0%, #FFFFFF 15%, transparent 16%),        #FF0000;
+
+        radial-gradient(circle at 18px 18px, #FFFFFF 0%, #FFFFFF 10%, transparent 11%),    border-radius: 50% 50% 10% 10%;
+
+        /* Tallo */    border: 1px solid #8B0000;
+
+        linear-gradient(to bottom, transparent 0%, transparent 40%, #F5F5DC 40%, #F5F5DC 100%);}
+
+    border: 1px solid #000;
+
+    image-rendering: pixelated;#player::after {
+
+    image-rendering: -moz-crisp-edges;    content: '';
+
+    image-rendering: crisp-edges;    position: absolute;
+
+}    top: 20px;
+
+    left: 12px;
+
+.player.jumping {    width: 2px;
+
+    animation: jump-squash 0.1s ease;    height: 2px;
+
+}    background: #000;
+
+    box-shadow: 
+
+.player.player-dead {        4px 0 0 #000,        /* ojo derecho */
+
+    animation: death-spin 0.5s ease-out;        2px 4px 0 #FF1493;   /* boca */
+
+    opacity: 0.7;}
+
+}
+
+/* OSO - Sprite auténtico 8-bit */
+
+@keyframes jump-squash {.enemy {
+
+    0% { transform: scaleY(1); }    position: absolute;
+
+    50% { transform: scaleY(0.8) scaleX(1.1); }    bottom: 12px;
+
+    100% { transform: scaleY(1); }    right: -60px;
+
+}    width: 40px;
+
+    height: 32px;
+
+@keyframes death-spin {    animation: moveLeft 3s linear infinite;
+
+    0% { transform: rotate(0deg); }    z-index: 5;
+
+    100% { transform: rotate(180deg); }    image-rendering: pixelated;
+
+}    
+
+    /* Cuerpo del oso */
+
+/* Enemigos - Osos pixelados */    background: 
+
+.enemy {        /* Cuerpo marrón */
+
+    position: absolute;        linear-gradient(0deg,
+
+    width: 40px;            #8B4513 0%, #8B4513 60%,
+
+    height: 40px;            #A0522D 60%, #A0522D 100%
+
+    bottom: 0px;        );
+
+    z-index: 5;    border: 1px solid #000;
+
+}    border-radius: 20% 20% 5% 5%;
+
+}
+
+.simple-enemy {
+
+    background: .enemy::before {
+
+        /* Cabeza del oso */    content: '';
+
+        radial-gradient(circle at 20px 12px, #8B4513 0%, #8B4513 70%, transparent 71%),    position: absolute;
+
+        /* Orejas */    top: -8px;
+
+        radial-gradient(circle at 10px 5px, #654321 0%, #654321 40%, transparent 41%),    left: 8px;
+
+        radial-gradient(circle at 30px 5px, #654321 0%, #654321 40%, transparent 41%),    width: 24px;
+
+        /* Hocico */    height: 20px;
+
+        radial-gradient(circle at 20px 20px, #D2691E 0%, #D2691E 30%, transparent 31%),    background: 
+
+        /* Cuerpo */        /* Cabeza del oso */
+
+        linear-gradient(to bottom, transparent 0%, transparent 25%, #8B4513 25%, #8B4513 100%);        radial-gradient(circle at 6px 12px, #654321 3px, transparent 3px),
+
+    border: 1px solid #000;        radial-gradient(circle at 18px 12px, #654321 3px, transparent 3px),
+
+    image-rendering: pixelated;        #8B4513;
+
+    animation: enemy-walk 0.5s infinite;    border: 1px solid #000;
+
+}    border-radius: 50% 50% 20% 20%;
+
+}
+
+@keyframes enemy-walk {
+
+    0%, 100% { transform: translateY(0px); }.enemy::after {
+
+    50% { transform: translateY(-2px); }    content: '';
+
+}    position: absolute;
+
+    top: -2px;
+
+/* Bitcoins */    left: 14px;
+
+.bitcoin {    width: 2px;
+
+    position: absolute;    height: 2px;
+
+    width: 30px;    background: #000;
+
+    height: 30px;    box-shadow: 
+
+    z-index: 5;        8px 0 0 #000,         /* ojos */
+
+}        4px 4px 0 #000,       /* nariz */
+
+        2px 6px 0 #654321,    /* boca izq */
+
+.simple-bitcoin {        6px 6px 0 #654321;    /* boca der */
+
+    background: }
+
+        radial-gradient(circle, #FFD700 0%, #FFD700 40%, #FFA500 40%, #FFA500 60%, #FF8C00 60%);
+
+    border: 2px solid #B8860B;/* Enemigos voladores (pájaros) */
+
+    border-radius: 50%;.enemy.flying-enemy {
+
+    font-size: 16px;    background: 
+
+    display: flex;        linear-gradient(45deg,
+
+    align-items: center;            #4169E1 0%, #4169E1 50%,
+
+    justify-content: center;            #1E90FF 50%, #1E90FF 100%
+
+    animation: bitcoin-spin 1s linear infinite;        );
+
+}    border-radius: 50% 10% 50% 10%;
+
+    animation: moveLeft 2s linear infinite, fly 0.5s ease-in-out infinite;
+
+.simple-bitcoin::after {}
+
+    content: '₿';
+
+    color: #8B4513;.enemy.flying-enemy::before {
+
+    font-weight: bold;    background: 
+
+}        linear-gradient(45deg,
+
+            #000080 0%, #000080 50%,
+
+@keyframes bitcoin-spin {            #4169E1 50%, #4169E1 100%
+
+    0% { transform: rotateY(0deg); }        );
+
+    100% { transform: rotateY(360deg); }    border-radius: 50% 50% 0% 0%;
+
+}}
+
+
+
+/* UI Panel *//* Animaciones */
+
+.ui-panel {@keyframes moveLeft {
+
+    position: absolute;    from { right: -60px; }
+
+    top: 10px;    to { right: 860px; }
+
+    left: 10px;}
+
+    z-index: 20;
+
+    display: flex;@keyframes fly {
+
+    gap: 20px;    0%, 100% { transform: translateY(0px); }
+
+}    50% { transform: translateY(-8px); }
+
+}
+
+.ui-item {
+
+    display: flex;@keyframes jump {
+
+    flex-direction: column;    0% { bottom: 12px; }
+
+    align-items: center;    50% { bottom: 180px; }
+
+}    100% { bottom: 12px; }
+
+}
+
+.ui-label {
+
+    font-size: 8px;.player.jumping {
+
+    color: #333;    animation: jump 0.6s ease-out;
+
+    margin-bottom: 5px;}
+
+}
+
+/* Bitcoins */
+
+.ui-value {.bitcoin {
+
+    font-size: 12px;    position: absolute;
+
+    color: #ff6b35;    bottom: 80px;
+
+    text-shadow: 1px 1px 0px #000;    right: -40px;
+
+}    width: 30px;
+
+    height: 30px;
+
+/* Pantallas de instrucciones y game over */    background: 
+
+.instructions, .game-over {        radial-gradient(circle at 50% 50%, #FFD700 40%, #FFA500 60%, #FF8C00 80%);
+
+    position: absolute;    border: 2px solid #B8860B;
+
+    top: 0;    border-radius: 50%;
+
+    left: 0;    animation: moveLeft 4s linear infinite, spin 1s linear infinite;
+
+    width: 100%;    z-index: 6;
+
+    height: 100%;    image-rendering: pixelated;
+
+    background: rgba(0, 0, 0, 0.8);}
+
+    display: flex;
+
+    align-items: center;.bitcoin::before {
+
+    justify-content: center;    content: '₿';
+
+    z-index: 100;    position: absolute;
+
+}    top: 50%;
+
+    left: 50%;
+
+.instruction-content, .game-over-content {    transform: translate(-50%, -50%);
+
+    background: #fff;    color: #8B4513;
+
+    border: 3px solid #000;    font-size: 14px;
+
+    padding: 30px;    font-weight: bold;
+
+    text-align: center;}
+
+    max-width: 400px;
+
+}@keyframes spin {
+
+    from { transform: rotate(0deg); }
+
+.instruction-content h2, .game-over-content h2 {    to { transform: rotate(360deg); }
+
+    font-size: 16px;}
+
+    color: #ff6b35;
+
+    margin-bottom: 20px;/* UI Elements */
+
+}.ui {
+
+    position: absolute;
+
+.instruction-content p, .game-over-content p {    top: 20px;
+
+    font-size: 8px;    left: 20px;
+
+    margin: 10px 0;    color: #000;
+
+    line-height: 1.5;    font-size: 12px;
+
+}    z-index: 15;
+
+    text-shadow: 1px 1px 0px #FFF;
+
+.instruction-content button, .game-over-content button {}
+
+    background: #4CAF50;
+
+    color: white;.instructions, .game-over {
+
+    border: 2px solid #000;    position: absolute;
+
+    padding: 10px 20px;    top: 50%;
+
+    font-family: inherit;    left: 50%;
+
+    font-size: 10px;    transform: translate(-50%, -50%);
+
+    cursor: pointer;    background: rgba(0, 0, 0, 0.8);
+
+    margin-top: 20px;    color: #FFF;
+
+    transition: background 0.2s;    padding: 20px;
+
+}    border: 3px solid #FFF;
+
+    text-align: center;
+
+.instruction-content button:hover, .game-over-content button:hover {    font-size: 14px;
+
+    background: #45a049;    z-index: 20;
+
+}}
+
+
+
+/* Responsive */.btn {
+
+@media (max-width: 850px) {    background: #4CAF50;
+
+    .game-container {    color: white;
+
+        width: 100vw;    border: none;
+
+        max-width: 800px;    padding: 10px 20px;
+
+    }    font-family: 'Press Start 2P', monospace;
+
+        font-size: 10px;
+
+    .game-title {    cursor: pointer;
+
+        font-size: 16px;    margin: 10px 5px;
+
+    }    border: 2px solid #000;
+
+}}
+
+.btn:hover {
+    background: #45a049;
+}
+
+/* Indicador de carga de salto */
+.jump-charge-indicator {
+    position: absolute;
+    bottom: 60px;
+    left: 80px;
+    width: 80px;
+    height: 8px;
+    background: rgba(0, 0, 0, 0.3);
+    border: 1px solid #000;
+    z-index: 12;
+}
+
+.jump-charge-bar {
+    height: 100%;
+    background: linear-gradient(90deg, #00FF00 0%, #FFFF00 50%, #FF0000 100%);
+    width: 0%;
+    transition: width 0.1s linear;
+}
+
+/* Responsive */
+@media (max-width: 900px) {
+    .game-container {
+        width: 90vw;
+        height: 40vh;
+    }
+}

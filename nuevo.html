@@ -1,0 +1,505 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Champirug - Nuevo</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            background: #87CEEB;
+            font-family: 'Courier New', monospace;
+            overflow: hidden;
+        }
+        
+        #gameContainer {
+            position: relative;
+            width: 100vw;
+            height: 100vh;
+            background: linear-gradient(to bottom, #87CEEB 70%, #32CD32 70%);
+        }
+        
+        /* CHAMPIÑÓN PIXELADO REAL */
+        .player {
+            position: absolute;
+            width: 32px;
+            height: 32px;
+            bottom: 0px;
+            left: 80px;
+            z-index: 100;
+            
+            /* Dibujo pixel por pixel del champiñón */
+            background: 
+                /* Sombrero rojo */
+                linear-gradient(to right, transparent 25%, #FF0000 25%, #FF0000 75%, transparent 75%),
+                /* Puntos blancos */
+                radial-gradient(circle 2px at 30% 30%, white 100%, transparent 100%),
+                radial-gradient(circle 2px at 70% 40%, white 100%, transparent 100%),
+                /* Tallo */
+                linear-gradient(to bottom, transparent 60%, #F5DEB3 60%);
+            background-size: 100% 60%, 100% 60%, 100% 60%, 100% 40%;
+            background-position: 0 0, 0 0, 0 0, 0 60%;
+            border: 2px solid #000;
+            image-rendering: pixelated;
+        }
+        
+        /* OSO PIXELADO REAL */
+        .simple-enemy {
+            position: absolute;
+            width: 32px;
+            height: 32px;
+            bottom: 0px;
+            z-index: 10;
+            
+            /* Dibujo del oso */
+            background: 
+                /* Cabeza */
+                radial-gradient(circle 12px at 50% 40%, #8B4513 70%, transparent 70%),
+                /* Orejas */
+                radial-gradient(circle 4px at 25% 20%, #654321 100%, transparent 100%),
+                radial-gradient(circle 4px at 75% 20%, #654321 100%, transparent 100%),
+                /* Hocico */
+                radial-gradient(circle 6px at 50% 60%, #DEB887 100%, transparent 100%);
+            border: 2px solid #000;
+            image-rendering: pixelated;
+        }
+        
+        .simple-enemy::before {
+            content: '• •';
+            position: absolute;
+            top: 8px;
+            left: 8px;
+            font-size: 12px;
+            color: black;
+            letter-spacing: 4px;
+        }
+        
+        .simple-enemy::after {
+            content: '●';
+            position: absolute;
+            top: 16px;
+            left: 14px;
+            font-size: 6px;
+            color: black;
+        }
+        
+        /* BITCOIN DORADO */
+        .simple-bitcoin {
+            position: absolute;
+            width: 24px;
+            height: 24px;
+            z-index: 5;
+            background: radial-gradient(circle, #FFD700 0%, #FFA500 100%);
+            border: 2px solid #B8860B;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            color: #8B7D00;
+            font-size: 12px;
+        }
+        
+        .simple-bitcoin::before {
+            content: '₿';
+        }
+        
+        /* UI PANELS */
+        .ui-panel {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            background: rgba(0,0,0,0.8);
+            color: white;
+            padding: 15px;
+            border-radius: 8px;
+            font-size: 16px;
+            font-family: 'Courier New', monospace;
+        }
+        
+        .instructions {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0,0,0,0.95);
+            color: white;
+            padding: 30px;
+            border-radius: 15px;
+            text-align: center;
+            border: 3px solid #FFD700;
+        }
+        
+        .game-over {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(255,0,0,0.95);
+            color: white;
+            padding: 30px;
+            border-radius: 15px;
+            text-align: center;
+            border: 3px solid #FFF;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div id="gameContainer">
+        <!-- UI Panel -->
+        <div class="ui-panel">
+            <div>🍄 Puntuación: <span id="score">0</span></div>
+            <div>⏰ Tiempo: <span id="time">0</span>s</div>
+            <div>🏆 Récord: <span id="highScore">0</span></div>
+        </div>
+
+        <!-- Player -->
+        <div id="player" class="player"></div>
+
+        <!-- Instructions -->
+        <div id="instructions" class="instructions">
+            <h1>🍄 CHAMPIRUG 🍄</h1>
+            <h2>¡Champiñón Saltarín!</h2>
+            <br>
+            <p><strong>🎮 CONTROLES:</strong></p>
+            <p>ESPACIO = Saltar</p>
+            <p>CLICK = Saltar</p>
+            <p>M = Silenciar música</p>
+            <br>
+            <p><strong>🎯 OBJETIVO:</strong></p>
+            <p>🐻 Evita los osos</p>
+            <p>₿ Recoge bitcoins</p>
+            <br>
+            <p><em>¡Presiona ESPACIO para empezar!</em></p>
+        </div>
+
+        <!-- Game Over -->
+        <div id="gameOver" class="game-over">
+            <h1>💀 GAME OVER 💀</h1>
+            <br>
+            <p>Puntuación Final: <span id="finalScore">0</span></p>
+            <br>
+            <p><em>Presiona ESPACIO para reiniciar</em></p>
+        </div>
+    </div>
+
+    <script>
+        // SISTEMA DE AUDIO SIMPLIFICADO
+        class SimpleAudio {
+            constructor() {
+                this.muted = false;
+                console.log('Audio system loaded');
+            }
+            playSoundEffect(sound) {
+                if (!this.muted) console.log('Playing:', sound);
+            }
+            stop() {}
+        }
+
+        // JUGADOR SIMPLIFICADO
+        class SimplePlayer {
+            constructor(container) {
+                this.container = container;
+                this.element = document.getElementById('player');
+                this.x = 80;
+                this.y = 0;
+                this.isJumping = false;
+                this.jumpForce = 0;
+                this.gravity = 0.6;
+                this.jumpSpeed = -14;
+                console.log('Player initialized');
+            }
+
+            jump() {
+                if (this.isJumping) return false;
+                console.log('Player jumping!');
+                this.isJumping = true;
+                this.jumpForce = this.jumpSpeed;
+                return true;
+            }
+
+            update() {
+                if (this.isJumping) {
+                    this.jumpForce += this.gravity;
+                    this.y -= this.jumpForce;
+
+                    if (this.y >= 0) {
+                        this.y = 0;
+                        this.isJumping = false;
+                        this.jumpForce = 0;
+                    }
+
+                    this.element.style.bottom = this.y + 'px';
+                }
+            }
+
+            getBounds() {
+                return {
+                    x: this.x, y: this.y, width: 32, height: 32,
+                    left: this.x, right: this.x + 32,
+                    top: this.y, bottom: this.y + 32
+                };
+            }
+
+            reset() {
+                this.y = 0;
+                this.isJumping = false;
+                this.jumpForce = 0;
+                this.element.style.bottom = '0px';
+            }
+        }
+
+        // ENEMIGO SIMPLIFICADO
+        class SimpleEnemy {
+            constructor(container, speed = 3) {
+                this.container = container;
+                this.speed = speed;
+                this.element = document.createElement('div');
+                this.width = 32;
+                this.height = 32;
+                this.x = 800;
+                
+                // Alturas variadas
+                const heights = [0, 30, 60, 100, 140];
+                this.y = heights[Math.floor(Math.random() * heights.length)];
+                
+                this.init();
+            }
+
+            init() {
+                this.element.className = 'simple-enemy';
+                this.element.style.left = this.x + 'px';
+                this.element.style.bottom = this.y + 'px';
+                this.container.appendChild(this.element);
+            }
+
+            update() {
+                this.x -= this.speed;
+                this.element.style.left = this.x + 'px';
+                return this.x > -this.width;
+            }
+
+            getBounds() {
+                return {
+                    x: this.x, y: this.y, width: this.width, height: this.height,
+                    left: this.x, right: this.x + this.width,
+                    top: this.y, bottom: this.y + this.height
+                };
+            }
+
+            destroy() {
+                if (this.element && this.element.parentNode) {
+                    this.element.parentNode.removeChild(this.element);
+                }
+            }
+        }
+
+        // BITCOIN SIMPLIFICADO
+        class SimpleBitcoin {
+            constructor(container, speed = 3) {
+                this.container = container;
+                this.speed = speed;
+                this.element = document.createElement('div');
+                this.width = 24;
+                this.height = 24;
+                this.x = 800;
+                
+                // Alturas variadas para bitcoins
+                const heights = [0, 25, 50, 80, 110, 150];
+                this.y = heights[Math.floor(Math.random() * heights.length)];
+                
+                this.init();
+            }
+
+            init() {
+                this.element.className = 'simple-bitcoin';
+                this.element.style.left = this.x + 'px';
+                this.element.style.bottom = this.y + 'px';
+                this.container.appendChild(this.element);
+            }
+
+            update() {
+                this.x -= this.speed;
+                this.element.style.left = this.x + 'px';
+                return this.x > -this.width;
+            }
+
+            getBounds() {
+                return {
+                    x: this.x, y: this.y, width: this.width, height: this.height,
+                    left: this.x, right: this.x + this.width,
+                    top: this.y, bottom: this.y + this.height
+                };
+            }
+
+            destroy() {
+                if (this.element && this.element.parentNode) {
+                    this.element.parentNode.removeChild(this.element);
+                }
+            }
+        }
+
+        // JUEGO PRINCIPAL
+        class ChampiGame {
+            constructor() {
+                this.container = document.getElementById('gameContainer');
+                this.player = new SimplePlayer(this.container);
+                this.audio = new SimpleAudio();
+                
+                // UI Elements
+                this.scoreEl = document.getElementById('score');
+                this.timeEl = document.getElementById('time');
+                this.highScoreEl = document.getElementById('highScore');
+                this.instructionsEl = document.getElementById('instructions');
+                this.gameOverEl = document.getElementById('gameOver');
+                this.finalScoreEl = document.getElementById('finalScore');
+
+                // Game state
+                this.isRunning = false;
+                this.score = 0;
+                this.time = 0;
+                this.enemies = [];
+                this.bitcoins = [];
+                
+                this.highScore = parseInt(localStorage.getItem('champiHighScore')) || 0;
+                this.highScoreEl.textContent = this.highScore;
+                
+                this.init();
+                console.log('Game initialized successfully!');
+            }
+
+            init() {
+                // Controls
+                document.addEventListener('keydown', (e) => {
+                    if (e.code === 'Space') {
+                        e.preventDefault();
+                        this.handleJump();
+                    }
+                });
+
+                this.container.addEventListener('click', () => {
+                    this.handleJump();
+                });
+
+                this.gameLoop();
+            }
+
+            handleJump() {
+                console.log('JUMP! isRunning:', this.isRunning);
+                
+                if (!this.isRunning) {
+                    console.log('Starting game...');
+                    this.startGame();
+                } else {
+                    console.log('Attempting jump...');
+                    if (this.player.jump()) {
+                        console.log('Jump successful!');
+                        this.audio.playSoundEffect('jump');
+                    }
+                }
+            }
+
+            startGame() {
+                console.log('Game started!');
+                this.isRunning = true;
+                this.instructionsEl.style.display = 'none';
+                this.gameOverEl.style.display = 'none';
+                
+                // Spawn timers
+                this.enemyTimer = setInterval(() => this.spawnEnemy(), 2000);
+                this.bitcoinTimer = setInterval(() => this.spawnBitcoin(), 3000);
+                this.scoreTimer = setInterval(() => {
+                    this.score += 10;
+                    this.time++;
+                    this.scoreEl.textContent = this.score;
+                    this.timeEl.textContent = this.time;
+                }, 1000);
+            }
+
+            spawnEnemy() {
+                const enemy = new SimpleEnemy(this.container, 4);
+                this.enemies.push(enemy);
+                console.log('Enemy spawned at height:', enemy.y);
+            }
+
+            spawnBitcoin() {
+                const bitcoin = new SimpleBitcoin(this.container, 3);
+                this.bitcoins.push(bitcoin);
+                console.log('Bitcoin spawned at height:', bitcoin.y);
+            }
+
+            gameLoop() {
+                if (this.isRunning) {
+                    this.player.update();
+                    
+                    // Update enemies
+                    this.enemies = this.enemies.filter(enemy => {
+                        const alive = enemy.update();
+                        if (!alive) enemy.destroy();
+                        else this.checkCollision(enemy, 'enemy');
+                        return alive;
+                    });
+                    
+                    // Update bitcoins
+                    this.bitcoins = this.bitcoins.filter(bitcoin => {
+                        const alive = bitcoin.update();
+                        if (!alive) bitcoin.destroy();
+                        else this.checkCollision(bitcoin, 'bitcoin');
+                        return alive;
+                    });
+                }
+                
+                requestAnimationFrame(() => this.gameLoop());
+            }
+
+            checkCollision(obj, type) {
+                const player = this.player.getBounds();
+                const other = obj.getBounds();
+                
+                if (player.right > other.left && player.left < other.right &&
+                    player.bottom > other.top && player.top < other.bottom) {
+                    
+                    if (type === 'enemy') {
+                        this.gameOver();
+                    } else if (type === 'bitcoin') {
+                        this.score += 100;
+                        this.scoreEl.textContent = this.score;
+                        obj.destroy();
+                        this.bitcoins = this.bitcoins.filter(b => b !== obj);
+                        console.log('Bitcoin collected!');
+                    }
+                }
+            }
+
+            gameOver() {
+                console.log('Game Over!');
+                this.isRunning = false;
+                clearInterval(this.enemyTimer);
+                clearInterval(this.bitcoinTimer);
+                clearInterval(this.scoreTimer);
+                
+                if (this.score > this.highScore) {
+                    this.highScore = this.score;
+                    localStorage.setItem('champiHighScore', this.highScore);
+                    this.highScoreEl.textContent = this.highScore;
+                }
+                
+                this.finalScoreEl.textContent = this.score;
+                this.gameOverEl.style.display = 'block';
+            }
+        }
+
+        // Iniciar el juego
+        window.addEventListener('load', () => {
+            console.log('Starting Champirug...');
+            new ChampiGame();
+        });
+    </script>
+</body>
+</html>

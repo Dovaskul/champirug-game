@@ -1,0 +1,58 @@
+<!DOCT    <link rel="stylesheet" href="css/style_new.css">
+</head>
+<body>
+    <div class="game-title">MUSHROOM JUMP 8-BIT</div>
+    
+    <div class="game-container" id="gameContainer">
+        <div class="ground"></div>
+        <div id="player"></div>>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mushroom Jump 8-bit</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <h1 class="game-title">MUSHROOM JUMP 8-BIT</h1>
+    
+    <div class="game-container" id="gameContainer">
+        <div class="ground"></div>
+        <div class="player" id="player"></div>
+        
+        <div class="ui">
+            <div>Score: <span id="score">0</span></div>
+            <div>Time: <span id="time">0</span>s</div>
+        </div>
+        
+        <div class="high-score">
+            <div>High Score: <span id="highScore">0</span></div>
+        </div>
+        
+        <div class="instructions" id="instructions">
+            <div>Jump to avoid the bears!</div>
+            <div>Collect bitcoins for extra points!</div>
+            <div><br>Press SPACE or CLICK to jump</div>
+            <div><br>Press SPACE to start</div>
+        </div>
+        
+        <div class="game-over" id="gameOver">
+            <div>GAME OVER!</div>
+            <div><br>Final Score: <span id="finalScore">0</span></div>
+            <div><br>Press SPACE to restart</div>
+        </div>
+    </div>
+    
+    <div class="controls">
+        <p>Controls: SPACE or CLICK to jump | Survive +1000pts/sec | Bitcoin +100000pts</p>
+    </div>
+
+    <script src="js/game_new.js"></script>
+    <script>
+        // Initialize game when page loads
+        document.addEventListener('DOMContentLoaded', () => {
+            window.game = new ChampignonGame();
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MUSHROOM JUMP 8-BIT</title>
+    <link rel="stylesheet" href="css/style.css?v=20251006104600">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+</head>
+<body>
+    <header>
+        <h1 class="game-title">MUSHROOM JUMP 8-BIT</h1>
+        <p>Press SPACE to jump!</p>
+        <button id="muteButton" class="mute-button">🔊 MUSIC ON</button>
+    </header>
+
+    <main>
+        <div class="game-container" id="gameContainer">
+            <div class="ground"></div>
+            <div id="player" class="player"></div>
+            
+            <!-- UI Panel -->
+            <div class="ui-panel">
+                <div class="ui-item">
+                    <div class="ui-label">SCORE</div>
+                    <div id="score" class="ui-value">00000</div>
+                </div>
+                <div class="ui-item">
+                    <div class="ui-label">TIME</div>
+                    <div id="time" class="ui-value">0s</div>
+                </div>
+                <div class="ui-item">
+                    <div class="ui-label">HIGH</div>
+                    <div id="highScore" class="ui-value">00000</div>
+                </div>
+            </div>
+
+            <!-- Instructions Screen -->
+            <div id="instructions" class="instructions">
+                <div class="instruction-content">
+                    <h2>MUSHROOM JUMP</h2>
+                    <p>🍄 Jump over obstacles</p>
+                    <p>💰 Collect bitcoins for points</p>
+                    <p>🐻 Avoid the bears</p>
+                    <p><strong>Press SPACE to jump</strong></p>
+                    <button onclick="window.game.startGame()">START GAME</button>
+                </div>
+            </div>
+
+            <!-- Game Over Screen -->
+            <div id="gameOver" class="game-over" style="display: none;">
+                <div class="game-over-content">
+                    <h2>GAME OVER</h2>
+                    <p>Final Score: <span id="finalScore">0</span></p>
+                    <button onclick="window.game.resetGame()">PLAY AGAIN</button>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script src="js/audio.js?v=20251006104600"></script>
+    <script src="js/player_simple.js?v=20251006104600"></script>
+    <script src="js/enemies_simple.js?v=20251006104600"></script>
+    <script src="js/game_simple.js?v=20251006104600"></script>
+    <script>
+        // Initialize game when page loads
+        document.addEventListener('DOMContentLoaded', () => {
+            console.log('🍄 Initializing Mushroom Game...');
+            window.game = new MushroomGame();
+            console.log('🍄 Game initialized successfully!');
+        });
+    </script>
+</body>
+</html>
