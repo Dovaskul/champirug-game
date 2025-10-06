@@ -375,7 +375,8 @@
             <div>
                 <button onclick="game.audio.toggleMute()" style="background:#FFD700;border:none;padding:5px;border-radius:3px;cursor:pointer;margin-right:5px;">🔊 Music</button>
                 <button id="walletConnectBtn" onclick="game.connectWallet()" style="background:#FF8C00;border:none;padding:5px;border-radius:3px;cursor:pointer;font-size:11px;margin-right:5px;">₿ Connect Wallet</button>
-                <button onclick="game.showDonation()" style="background:#9370DB;border:none;padding:5px;border-radius:3px;cursor:pointer;font-size:11px;">💜 Donate</button>
+                <button onclick="game.showDonation()" style="background:#9370DB;border:none;padding:5px;border-radius:3px;cursor:pointer;font-size:11px;margin-right:5px;">💜 Donate</button>
+                <button onclick="runDiagnosticAndShow()" style="background:#FF4500;color:white;border:none;padding:5px;border-radius:3px;cursor:pointer;font-size:11px;">🔬 Debug</button>
             </div>
         </div>
 
@@ -2081,6 +2082,122 @@ Thank you for supporting indie game development! 🍄`;
             console.log('❌ Wallet selection modal closed');
         }
 
+        // Manual diagnostic function that can be called from console
+        function runFullDiagnostic() {
+            console.clear();
+            console.log('🔬 ===== FULL WALLET DIAGNOSTIC =====');
+            
+            // 1. Basic environment info
+            console.log('📊 BROWSER INFO:');
+            console.log('  Navigator:', navigator.userAgent);
+            console.log('  Location:', window.location.href);
+            console.log('  Document ready:', document.readyState);
+            
+            // 2. Check ALL window properties
+            console.log('\n🌐 WINDOW ANALYSIS:');
+            const allKeys = Object.keys(window);
+            console.log('  Total window keys:', allKeys.length);
+            
+            // Filter for wallet-related
+            const walletKeys = allKeys.filter(k => {
+                const lower = k.toLowerCase();
+                return lower.includes('xver') || lower.includes('uni') || 
+                       lower.includes('bitcoin') || lower.includes('btc') ||
+                       lower.includes('sats') || lower.includes('wallet') ||
+                       lower.includes('provider') || lower.includes('web3');
+            });
+            console.log('  Wallet-related keys:', walletKeys);
+            
+            // 3. Specific Xverse checks
+            console.log('\n🟣 XVERSE DETAILED CHECK:');
+            const xverseTests = {
+                'window.XverseProviders': window.XverseProviders,
+                'window.XverseProviders?.BitcoinProvider': window.XverseProviders?.BitcoinProvider,
+                'window.BitcoinProvider': window.BitcoinProvider,
+                'window.xverse': window.xverse,
+                'window.Xverse': window.Xverse,
+                'window.sats': window.sats,
+                'window.webln': window.webln
+            };
+            
+            Object.entries(xverseTests).forEach(([key, value]) => {
+                console.log(`  ${key}:`, typeof value, value ? '✅' : '❌');
+                if (value && typeof value === 'object') {
+                    console.log(`    └─ Properties:`, Object.keys(value));
+                    if (value.request) console.log(`    └─ Has request method: ✅`);
+                    if (value.getAddresses) console.log(`    └─ Has getAddresses method: ✅`);
+                }
+            });
+            
+            // 4. Extension detection
+            console.log('\n🔌 EXTENSION DETECTION:');
+            console.log('  Chrome extensions:', !!window.chrome?.runtime);
+            
+            // 5. Current wallet auth state
+            console.log('\n🔐 CURRENT WALLET STATE:');
+            try {
+                const availableNow = walletAuth.getAvailableWallets();
+                console.log('  Currently detected wallets:', availableNow.map(w => w.name));
+            } catch (e) {
+                console.log('  Error getting wallets:', e.message);
+            }
+            
+            console.log('\n========================================');
+            
+            return {
+                browser: navigator.userAgent,
+                walletKeys,
+                xverseTests,
+                hasChrome: !!window.chrome
+            };
+        }
+
+        // Function to show diagnostic in user-friendly format
+        function runDiagnosticAndShow() {
+            const result = runFullDiagnostic();
+            
+            let message = '🔬 WALLET DIAGNOSTIC REPORT\n';
+            message += '================================\n\n';
+            
+            // Browser info
+            message += '📊 BROWSER:\n';
+            message += `${navigator.userAgent.includes('Chrome') ? 'Chrome' : 'Other'}\n\n`;
+            
+            // Wallet keys found
+            message += '🔍 WALLET-RELATED KEYS FOUND:\n';
+            if (result.walletKeys.length > 0) {
+                message += result.walletKeys.join(', ') + '\n\n';
+            } else {
+                message += 'None found ❌\n\n';
+            }
+            
+            // Xverse specific
+            message += '🟣 XVERSE STATUS:\n';
+            Object.entries(result.xverseTests).forEach(([key, value]) => {
+                const status = value ? '✅' : '❌';
+                const type = typeof value;
+                message += `${key}: ${status} (${type})\n`;
+            });
+            
+            message += '\n💡 NEXT STEPS:\n';
+            if (result.walletKeys.length === 0) {
+                message += '1. Install Xverse wallet extension\n';
+                message += '2. Refresh this page\n';
+                message += '3. Try again\n';
+            } else if (!result.hasChrome) {
+                message += '1. Use Chrome or Chromium browser\n';
+                message += '2. Make sure extensions are enabled\n';
+            } else {
+                message += '1. Check browser console (F12)\n';
+                message += '2. Make sure Xverse is unlocked\n';
+                message += '3. Try refreshing the page\n';
+            }
+            
+            message += '\n🔬 Full details in browser console.';
+            
+            alert(message);
+        }
+
         // Diagnostic function for Xverse detection
         function diagnoseXverse() {
             console.log('🔬 XVERSE DIAGNOSTIC START');
@@ -2128,6 +2245,13 @@ Thank you for supporting indie game development! 🍄`;
         
         window.addEventListener('load', () => {
             console.log('🚀 Starting CHAMPIRUG...');
+            
+            // Run initial diagnostic
+            setTimeout(() => {
+                console.log('🔬 Running initial wallet diagnostic...');
+                runFullDiagnostic();
+            }, 1000);
+            
             game = new ChampiGame();
             
             // Update wallet status on page load
@@ -2148,6 +2272,7 @@ Thank you for supporting indie game development! 🍄`;
                     clearInterval(walletChecker);
                 } else if (checkCount >= 10) {
                     console.log('⏰ Stopped checking for wallets after 10 seconds');
+                    console.log('🔬 Running final diagnostic since no wallets found...');
                     diagnoseXverse(); // Run final diagnostic
                     clearInterval(walletChecker);
                 }
