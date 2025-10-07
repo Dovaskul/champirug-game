@@ -503,8 +503,8 @@
 
             /* Ajustar posición del champiñón para zona verde */
             .player {
-                bottom: 10px; /* Posición fija en suelo verde */
-                left: min(60px, 12vw);
+                bottom: 10px !important; /* Posición fija en suelo verde - forzar sobre JavaScript */
+                left: min(60px, 12vw) !important;
             }
 
             .mobile-controls {
@@ -542,25 +542,25 @@
             }
 
             .dpad-up {
-                top: 10px;
+                top: 15px;
                 left: 50%;
                 transform: translateX(-50%);
             }
 
             .dpad-down {
-                bottom: 10px;
+                bottom: 15px;
                 left: 50%;
                 transform: translateX(-50%);
             }
 
             .dpad-left {
-                left: 8%; /* Más hacia la izquierda para aprovechar el ancho */
+                left: 15%; /* Mejor distribución horizontal */
                 top: 50%;
                 transform: translateY(-50%);
             }
 
             .dpad-right {
-                right: 8%; /* Más hacia la derecha para aprovechar el ancho */
+                right: 15%; /* Mejor distribución horizontal */
                 top: 50%;
                 transform: translateY(-50%);
             }
