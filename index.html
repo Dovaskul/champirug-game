@@ -501,10 +501,11 @@
                 background: linear-gradient(to bottom, #87CEEB 60%, #32CD32 60%);
             }
 
-            /* Ajustar posición del champiñón para zona verde */
-            .player {
+            /* Ajustar posición del champiñón para zona verde - MÁXIMA ESPECIFICIDAD */
+            #gameContainer .player[id="player"] {
                 bottom: 10px !important; /* Posición fija en suelo verde - forzar sobre JavaScript */
                 left: min(60px, 12vw) !important;
+                position: absolute !important;
             }
 
             .mobile-controls {
@@ -671,14 +672,16 @@
         /* ADAPTACIONES PANTALLAS PEQUEÑAS */
         @media (max-width: 480px) {
             .dpad {
-                max-width: 280px;
-                height: 100px;
+                max-width: 95vw;
+                height: 160px; /* Mantener tamaño grande */
             }
 
             .dpad-button {
-                width: 45px;
-                height: 45px;
-                font-size: 18px;
+                width: min(18vw, 90px) !important; /* Mantener tamaño grande */
+                height: min(18vw, 90px) !important;
+                font-size: min(6vw, 28px) !important;
+                min-width: 80px !important;
+                min-height: 80px !important;
             }
 
             .ui-panel, .leaderboard {
@@ -763,15 +766,51 @@
                 padding: 8px;
             }
 
+            /* CHAMPIÑÓN POSICIÓN FIJA EN MÓVIL - SOBREPONER JAVASCRIPT */
+            #gameContainer #player.player {
+                bottom: 10px !important;
+                left: min(60px, 12vw) !important;
+                position: absolute !important;
+            }
+
+            /* D-PAD GRANDE FORZADO PARA MÓVIL */
             .dpad {
-                width: 100px;
-                height: 100px;
+                width: 100% !important;
+                max-width: 95vw !important;
+                height: 160px !important;
             }
 
             .dpad-button {
-                width: 35px;
-                height: 35px;
-                font-size: 14px;
+                width: min(18vw, 90px) !important;
+                height: min(18vw, 90px) !important;
+                font-size: min(6vw, 28px) !important;
+                min-width: 80px !important;
+                min-height: 80px !important;
+            }
+            
+            /* POSICIONES DE CRUCETA FORZADAS */
+            .dpad-up {
+                top: 15px !important;
+                left: 50% !important;
+                transform: translateX(-50%) !important;
+            }
+
+            .dpad-down {
+                bottom: 15px !important;
+                left: 50% !important;
+                transform: translateX(-50%) !important;
+            }
+
+            .dpad-left {
+                left: 15% !important;
+                top: 50% !important;
+                transform: translateY(-50%) !important;
+            }
+
+            .dpad-right {
+                right: 15% !important;
+                top: 50% !important;
+                transform: translateY(-50%) !important;
             }
         }
         
