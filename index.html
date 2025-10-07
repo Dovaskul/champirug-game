@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>🍄 Champirug Game v5.17.0 - Grass Zone Gameplay!</title>
+    <title>🍄 Champirug Game v5.17.1 - Unisat Only Mode!</title>
     <link rel="icon" type="image/x-icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2280%22>🍄</text></svg>">
     <style>
         * {
@@ -394,20 +394,20 @@
             text-align: center;
         }
 
-        /* OCULTAR DEBUG PANEL POR DEFECTO - PERO PERMITIR MOSTRAR */
+        /* OCULTAR DEBUG PANEL COMPLETAMENTE */
         #xverseDebugLog {
-            display: none;
-            visibility: hidden;
-            opacity: 0;
-            pointer-events: none;
+            display: none !important;
+            visibility: hidden !important;
+            opacity: 0 !important;
+            pointer-events: none !important;
         }
 
-        /* CLASE PARA MOSTRAR DEBUG LOG CUANDO SE NECESITE */
+        /* CLASE PARA MOSTRAR DEBUG LOG DESHABILITADA TEMPORALMENTE */
         #xverseDebugLog.show-debug {
-            display: block !important;
-            visibility: visible !important;
-            opacity: 1 !important;
-            pointer-events: auto !important;
+            display: none !important;
+            visibility: hidden !important;
+            opacity: 0 !important;
+            pointer-events: none !important;
         }
 
         /* CONTROLES MÓVILES - CRUCETA VIRTUAL */
@@ -834,7 +834,7 @@
     <div id="gameContainer">
         <!-- Version Badge -->
         <div id="versionBadge" class="version-badge">
-            v5.17.0
+            v5.17.1
         </div>
 
         <!-- UI Panel -->
@@ -846,10 +846,7 @@
             <div id="walletStatus" style="font-size: 12px; opacity: 0.8;">🔑 Wallet: Not connected</div>
             <div>
                 <button onclick="game.audio.toggleMute()" style="background:#FFD700;border:none;padding:5px;border-radius:3px;cursor:pointer;margin-right:5px;">🔊 Music</button>
-                <button id="walletConnectBtn" onclick="game.connectWallet()" style="background:#FF8C00;border:none;padding:5px;border-radius:3px;cursor:pointer;font-size:11px;margin-right:5px;">₿ Connect Wallet</button>
                 <button onclick="game.showDonation()" style="background:#9370DB;border:none;padding:5px;border-radius:3px;cursor:pointer;font-size:11px;margin-right:5px;">💜 Donate</button>
-                <button onclick="runDiagnosticAndShow()" style="background:#FF4500;color:white;border:none;padding:5px;border-radius:3px;cursor:pointer;font-size:11px;margin-right:5px;">🔬 Debug</button>
-                <button onclick="downloadXverseLogs()" style="background:#00aa00;color:white;border:none;padding:5px;border-radius:3px;cursor:pointer;font-size:11px;">📥 Logs</button>
             </div>
         </div>
 
@@ -895,39 +892,7 @@
             <p style="font-size: 14px; opacity: 0.8;">You can also press SPACE</p>
         </div>
 
-        <!-- Xverse Debug Log - HIDDEN -->
-        <div id="xverseDebugLog" style="
-            position: fixed;
-            top: 10px;
-            right: 10px;
-            width: 450px;
-            max-height: 600px;
-            background: rgba(0, 0, 0, 0.95);
-            display: none !important;
-            visibility: hidden !important;
-            color: #00FF00;
-            font-family: 'Courier New', monospace;
-            font-size: 11px;
-            padding: 15px;
-            border-radius: 10px;
-            border: 3px solid #00FF00;
-            overflow-y: auto;
-            z-index: 99999999;
-            display: none;
-            box-shadow: 0 0 20px rgba(0, 255, 0, 0.3);
-            user-select: text;
-            cursor: default;
-        ">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
-                <h3 style="margin: 0; color: #00FF00;">🔍 XVERSE DEBUG LOG (F12=toggle)</h3>
-                <div>
-                    <button onclick="window.xverseLogger.downloadLogs()" style="background: #00aa00; color: white; border: none; padding: 2px 6px; border-radius: 3px; cursor: pointer; margin-right: 5px;">📥 Download</button>
-                    <button onclick="window.xverseLogger.toggleVisibility()" style="background: #0066ff; color: white; border: none; padding: 2px 6px; border-radius: 3px; cursor: pointer; margin-right: 5px;">Hide</button>
-                    <button onclick="clearXverseLog()" style="background: #ff0000; color: white; border: none; padding: 2px 6px; border-radius: 3px; cursor: pointer;">Clear</button>
-                </div>
-            </div>
-            <div id="xverseLogContent"></div>
-        </div>
+        <!-- Debug panel completamente deshabilitado temporalmente -->
     </div>
 
     <!-- Xverse wallet integration using native browser APIs -->
@@ -1202,29 +1167,13 @@
         // Initialize debug logger
         window.xverseLogger = new XverseDebugLogger();
 
-        // Clear log function for button
+        // Debug functions temporarily disabled
         function clearXverseLog() {
-            window.xverseLogger.clear();
+            console.log('🚫 Debug functions disabled');
         }
 
-        // Download logs function for main UI button
         function downloadXverseLogs() {
-            if (window.xverseLogger && window.xverseLogger.fileLogs.length > 0) {
-                window.xverseLogger.downloadLogs();
-                
-                // Mostrar temporalmente el debug panel
-                window.xverseLogger.show();
-                setTimeout(() => {
-                    alert('📥 Logs downloaded!\n\nCheck your Downloads folder for:\nxverse_debug_logs_*.json\n\nDebug panel will auto-hide in 5 seconds.');
-                }, 100);
-                
-                // Auto-hide después de 5 segundos
-                setTimeout(() => {
-                    window.xverseLogger.hide();
-                }, 5000);
-            } else {
-                alert('📝 No logs available yet.\n\nTo generate logs:\n1. Click "₿ Connect Wallet"\n2. Try connecting with Xverse\n3. Then download logs');
-            }
+            console.log('🚫 Debug functions disabled');
         }
 
         // Bitcoin Wallet Authentication
@@ -2726,33 +2675,32 @@ Thank you for supporting indie game development! 🍄`;
                         return;
                     }
 
-                    // Show available wallets info
-                    console.log('📱 Available wallets:', availableWallets.map(w => w.name));
+                    // Temporarily disable Xverse - only show Unisat
+                    const unisatWallets = availableWallets.filter(w => w.type === 'unisat');
+                    console.log('📱 Unisat wallets found:', unisatWallets.length);
                     
-                    // If only one wallet, connect directly
-                    if (availableWallets.length === 1) {
-                        console.log('📱 Only one wallet available:', availableWallets[0].name);
-                        
-                        // Show loading state
-                        const originalText = this.walletConnectBtn.innerHTML;
-                        this.walletConnectBtn.innerHTML = '⏳ Connecting...';
-                        this.walletConnectBtn.disabled = true;
-                        
-                        try {
-                            const walletInfo = await walletAuth.connectWallet(availableWallets[0].type);
-                            this.updateWalletStatus();
-                            alert(`✅ Wallet connected successfully!\n\nWallet: ${walletInfo.wallet}\nAddress: ${walletInfo.address}\n\nYou're ready to compete in the global leaderboard!`);
-                        } catch (connectError) {
+                    if (unisatWallets.length === 0) {
+                        alert('❌ No Unisat wallet detected!\n\n🔧 Please install Unisat wallet extension and try again.\n\n(Xverse temporarily disabled)');
+                        return;
+                    }
+                    
+                    // Connect to Unisat directly
+                    console.log('� Connecting to Unisat wallet...');
+                    
+                    // Show loading state
+                    const originalText = this.walletConnectBtn.innerHTML;
+                    this.walletConnectBtn.innerHTML = '⏳ Connecting...';
+                    this.walletConnectBtn.disabled = true;
+                    
+                    try {
+                        const walletInfo = await walletAuth.connectWallet('unisat');
+                        this.updateWalletStatus();
+                        alert(`✅ Unisat wallet connected successfully!\n\nAddress: ${walletInfo.address}\n\nYou're ready for the global leaderboard!`);
+                    } catch (connectError) {
                             this.walletConnectBtn.innerHTML = originalText;
                             this.walletConnectBtn.disabled = false;
                             throw connectError;
                         }
-                        return;
-                    }
-
-                    // Multiple wallets - show visual selector
-                    console.log('🔍 DEBUG: Showing wallet modal with', availableWallets.length, 'wallets');
-                    this.showWalletModal(availableWallets);
                     
                 } catch (error) {
                     console.error('❌ Manual wallet connection failed:', error);
@@ -2769,113 +2717,16 @@ Thank you for supporting indie game development! 🍄`;
                 }
             }
 
-            // Show wallet selection modal
+            // Wallet modal functionality temporarily disabled
             showWalletModal(availableWallets) {
-                const modal = document.getElementById('walletModal');
-                const container = document.getElementById('walletButtonsContainer');
-                
-                // Clear previous buttons
-                container.innerHTML = '';
-                
-                // Create buttons for each wallet
-                availableWallets.forEach(wallet => {
-                    const button = document.createElement('div');
-                    button.className = `wallet-button ${wallet.type}`;
-                    button.onclick = () => this.selectWallet(wallet.type);
-                    
-                    button.innerHTML = `
-                        <div class="wallet-logo">${wallet.logo}</div>
-                        <strong>${wallet.name}</strong><br>
-                        <small>Click to connect</small>
-                    `;
-                    
-                    container.appendChild(button);
-                });
-                
-                // Show modal
-                modal.style.display = 'flex';
-                console.log('📱 Wallet selection modal shown');
+                // Temporarily disabled - only Unisat support
+                console.log('� Wallet modal disabled - only Unisat supported');
             }
 
-            // Select and connect to wallet with improved error handling
+            // Wallet selection temporarily disabled - only Unisat supported
             async selectWallet(walletType) {
-                const modal = document.getElementById('walletModal');
-                const originalModalContent = modal.innerHTML;
-                
-                try {
-                    console.log('👤 User selected wallet:', walletType);
-                    
-                    // Show loading state in modal
-                    const modalContent = modal.querySelector('.wallet-modal-content');
-                    modalContent.innerHTML = `
-                        <h3>🔗 Connecting to ${walletType === 'xverse' ? 'Xverse' : 'Unisat'}...</h3>
-                        <div style="margin: 20px 0;">
-                            <div style="font-size: 48px;">⏳</div>
-                            <p>Please approve the connection in your wallet</p>
-                        </div>
-                    `;
-                    
-                    // Connect to selected wallet
-                    const walletInfo = await walletAuth.connectWallet(walletType);
-                    
-                    // Hide modal
-                    modal.style.display = 'none';
-                    modal.innerHTML = originalModalContent;
-                    
-                    // Update UI
-                    this.updateWalletStatus();
-                    
-                    // Show success message
-                    alert(`✅ Wallet connected successfully!\n\nWallet: ${walletInfo.wallet}\nAddress: ${walletInfo.address}\n\nYou're ready to compete in the global leaderboard!`);
-                    
-                    console.log('✅ Wallet connection successful:', walletInfo);
-                    
-                } catch (error) {
-                    console.error('❌ Wallet selection failed:', error);
-                    
-                    // Restore modal content
-                    modal.innerHTML = originalModalContent;
-                    
-                    // Show specific error handling for different wallet types
-                    let errorMessage = `❌ Connection to ${walletType.toUpperCase()} failed!\n\n`;
-                    
-                    if (walletType === 'xverse' && error.message.includes('JSON')) {
-                        errorMessage += '🔧 Common Xverse Fix:\n1. Refresh this page\n2. Make sure Xverse is unlocked\n3. Try connecting again\n\nThis usually resolves communication issues.';
-                    } else if (walletType === 'xverse') {
-                        if (error.message.includes('no approval popup')) {
-                            errorMessage += `${error.message}\n\n🔄 Want to try again?\nPress OK and we'll attempt connection once more.`;
-                            
-                            // Offer to retry with a different approach
-                            if (confirm(errorMessage)) {
-                                try {
-                                    console.log('🔄 User requested retry for Xverse...');
-                                    // Try one more time with a delay
-                                    setTimeout(async () => {
-                                        try {
-                                            const retryResult = await walletAuth.connectXverse(window.XverseProviders?.BitcoinProvider);
-                                            modal.style.display = 'none';
-                                            this.updateWalletStatus();
-                                            alert(`✅ Xverse connected on retry!\n\nAddress: ${retryResult.address}`);
-                                        } catch (retryError) {
-                                            alert(`❌ Retry failed: ${retryError.message}\n\nPlease try:\n1. Click Xverse icon in browser\n2. Manually unlock wallet\n3. Refresh page and try again`);
-                                        }
-                                    }, 1000);
-                                    return; // Don't show the original error
-                                } catch (retryError) {
-                                    errorMessage = `❌ Both attempts failed!\n\n${retryError.message}`;
-                                }
-                            } else {
-                                return; // User cancelled, don't show error
-                            }
-                        } else {
-                            errorMessage += `${error.message}\n\n💡 Xverse Tips:\n• Click the Xverse extension icon\n• Make sure wallet is unlocked\n• Look for popup windows\n• Try refreshing the page`;
-                        }
-                    } else {
-                        errorMessage += `Error: ${error.message}\n\nPlease try again or select a different wallet.`;
-                    }
-                    
-                    alert(errorMessage);
-                }
+                console.log('🚫 Wallet selection disabled - only Unisat supported');
+                return;
             }
 
             // Check available wallets and update button
@@ -3270,50 +3121,9 @@ Thank you for supporting indie game development! 🍄`;
             }
         }
 
-        // Function to show diagnostic in user-friendly format
+        // Diagnostic functions temporarily disabled
         function runDiagnosticAndShow() {
-            const result = runFullDiagnostic();
-            
-            let message = '🔬 WALLET DIAGNOSTIC REPORT\n';
-            message += '================================\n\n';
-            
-            // Browser info
-            message += '📊 BROWSER:\n';
-            message += `${navigator.userAgent.includes('Chrome') ? 'Chrome' : 'Other'}\n\n`;
-            
-            // Wallet keys found
-            message += '🔍 WALLET-RELATED KEYS FOUND:\n';
-            if (result.walletKeys.length > 0) {
-                message += result.walletKeys.join(', ') + '\n\n';
-            } else {
-                message += 'None found ❌\n\n';
-            }
-            
-            // Xverse specific
-            message += '🟣 XVERSE STATUS:\n';
-            Object.entries(result.xverseTests).forEach(([key, value]) => {
-                const status = value ? '✅' : '❌';
-                const type = typeof value;
-                message += `${key}: ${status} (${type})\n`;
-            });
-            
-            message += '\n💡 NEXT STEPS:\n';
-            if (result.walletKeys.length === 0) {
-                message += '1. Install Xverse wallet extension\n';
-                message += '2. Refresh this page\n';
-                message += '3. Try again\n';
-            } else if (!result.hasChrome) {
-                message += '1. Use Chrome or Chromium browser\n';
-                message += '2. Make sure extensions are enabled\n';
-            } else {
-                message += '1. Check browser console (F12)\n';
-                message += '2. Make sure Xverse is unlocked\n';
-                message += '3. Try refreshing the page\n';
-            }
-            
-            message += '\n🔬 Full details in browser console.';
-            
-            alert(message);
+            console.log('🚫 Diagnostic functions disabled');
         }
 
         // Diagnostic function for Xverse detection
@@ -3407,15 +3217,10 @@ Thank you for supporting indie game development! 🍄`;
         });
     </script>
 
-    <!-- Wallet Selection Modal -->
-    <div id="walletModal" class="wallet-modal">
-        <div class="wallet-modal-content">
-            <button class="wallet-close" onclick="closeWalletModal()">×</button>
-            <h3>🔗 Choose Your Bitcoin Wallet</h3>
-            <div id="walletButtonsContainer">
-                <!-- Wallet buttons will be inserted here -->
-            </div>
-        </div>
+    <!-- Wallet Selection Modal - TEMPORARILY DISABLED -->
+    <div id="walletModal" class="wallet-modal" style="display: none !important;">
+        <!-- Modal temporarily disabled - only Unisat support -->
+    </div>
     </div>
 
     <!-- Controles Móviles - Cruceta Virtual -->
