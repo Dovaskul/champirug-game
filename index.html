@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>🍄 Champirug Game v5.17.4 - Mobile Zone Adjustment!</title>
+    <title>🍄 Champirug Game v5.18.0 - Mobile UX Refinement</title>
     <link rel="icon" type="image/x-icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2280%22>🍄</text></svg>">
     <style>
         * {
@@ -158,6 +158,16 @@
             font-size: 18px;
             max-height: 80vh;
             overflow-y: auto;
+        }
+
+        @media (max-width: 768px) {
+            .game-over {
+                padding: 20px;
+                font-size: 16px;
+                max-width: 280px;
+                width: 85%;
+                max-height: 60vh;
+            }
         }
 
         .restart-button {
@@ -497,8 +507,8 @@
             #gameContainer {
                 height: calc(100vh - 180px); /* Más espacio para D-pad más grande */
                 margin-bottom: 180px; /* Espacio para los controles */
-                /* Cielo azul + césped verde (champiñón) + tierra marrón (zona inferior) */
-                background: linear-gradient(to bottom, #87CEEB 65%, #32CD32 65%, #32CD32 85%, #8B4513 85%);
+                /* Césped verde más alto en móvil: 55% cielo, 30% césped, 15% tierra */
+                background: linear-gradient(to bottom, #87CEEB 55%, #32CD32 55%, #32CD32 85%, #8B4513 85%);
             }
 
             /* Champiñón puede moverse normalmente en móvil - sin restricciones */
@@ -831,7 +841,7 @@
     <div id="gameContainer">
         <!-- Version Badge -->
         <div id="versionBadge" class="version-badge">
-            v5.17.4
+            v5.18.0
         </div>
 
         <!-- UI Panel -->
@@ -1999,7 +2009,7 @@
                 // Player physics with dynamic sizing
                 this.player = {
                     x: 80,
-                    y: 200, /* Posición inicial en medio del césped verde */
+                    y: this.isMobile ? 140 : 200, /* Posición inicial en medio del césped verde - Mobile: Y=140 (80-200), Desktop: Y=200 */
                     width: this.playerSize,
                     height: this.playerSize,
                     isJumping: false,
@@ -2269,8 +2279,8 @@ Thank you for supporting indie game development! 🍄`;
                 if (!this.isRunning) return;
                 
                 console.log('⬇️ MOVING DOWN!');
-                // Mobile: Y=40 min, Desktop: Y=160 min
-                const minY = this.isMobile ? 40 : 160;
+                // Mobile: Y=80 min (eliminada posición más baja), Desktop: Y=160 min
+                const minY = this.isMobile ? 80 : 160;
                 this.player.y = Math.max(this.player.y - 40, minY);
                 this.playerElement.style.bottom = this.player.y + 'px';
                 this.playerElement.style.filter = 'brightness(0.8)';
@@ -2324,8 +2334,8 @@ Thank you for supporting indie game development! 🍄`;
                 
                 // Reset player - posicionar en zona de césped verde
                 this.player.x = 80;
-                // Mobile: Y=120 (middle of 40-200), Desktop: Y=200 (middle of 160-320)
-                this.player.y = this.isMobile ? 120 : 200;
+                // Mobile: Y=140 (middle of 80-200), Desktop: Y=200 (middle of 160-320)
+                this.player.y = this.isMobile ? 140 : 200;
                 this.player.isJumping = false;
                 this.player.jumpForce = 0;
                 this.playerElement.style.bottom = this.player.y + 'px';
@@ -2347,9 +2357,9 @@ Thank you for supporting indie game development! 🍄`;
 
             spawnEnemy() {
                 const containerWidth = this.container.offsetWidth || 1200;
-                // Mobile: 40-200px range, Desktop: 160-320px range
+                // Mobile: 80-200px range (eliminada Y=40), Desktop: 160-320px range
                 const heights = this.isMobile ? 
-                    [40, 80, 120, 160, 200] : 
+                    [80, 120, 160, 200] : 
                     [160, 200, 240, 280, 320];
                 const enemy = {
                     x: containerWidth,
@@ -2371,9 +2381,9 @@ Thank you for supporting indie game development! 🍄`;
 
             spawnCoin() {
                 const containerWidth = this.container.offsetWidth || 1200;
-                // Mobile: 40-200px range, Desktop: 160-320px range
+                // Mobile: 80-200px range (eliminada Y=40-60), Desktop: 160-320px range
                 const heights = this.isMobile ? 
-                    [40, 60, 80, 100, 120, 140, 160, 180, 200] : 
+                    [80, 100, 120, 140, 160, 180, 200] : 
                     [160, 180, 200, 220, 240, 260, 280, 300, 320];
                 const coin = {
                     x: containerWidth,
