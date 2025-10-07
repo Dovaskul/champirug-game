@@ -636,6 +636,18 @@
                                 }
             
                                 console.log('📢 Requesting addresses from Xverse...');
+                                
+                                // Force user interaction context for popup
+                                const userClick = new MouseEvent('click', {
+                                    view: window,
+                                    bubbles: true,
+                                    cancelable: true
+                                });
+                                document.dispatchEvent(userClick);
+                                
+                                // Small delay to ensure user interaction context is set
+                                await new Promise(resolve => setTimeout(resolve, 100));
+                                
                                 const response = await window.XverseProviders.BitcoinProvider.request('getAddresses');
                                 console.log('📋 Xverse response:', response);
             
@@ -678,7 +690,21 @@
                                 
                             } catch (error) {
                                 console.error('❌ Xverse connection failed:', error);
-                                throw new Error('Xverse connection failed: ' + error.message);
+                                
+                                // Better error messages for common Xverse issues
+                                let errorMessage = 'Xverse connection failed.\n\n';
+                                
+                                if (error.message.includes('User denied') || error.message.includes('rejected')) {
+                                    errorMessage += '❌ Connection rejected by user.\n\nPlease approve the connection in your Xverse wallet.';
+                                } else if (error.message.includes('addresses') || error.message.includes('No addresses')) {
+                                    errorMessage += '🔧 No addresses found.\n\nMake sure:\n• Xverse wallet is unlocked\n• You have Bitcoin addresses in your wallet\n• Try refreshing the page';
+                                } else if (error.message.includes('popup') || error.message.includes('approval')) {
+                                    errorMessage += '🔧 Popup blocked or not appearing.\n\nTry this:\n• Click the Xverse extension icon in your browser\n• Make sure popups are allowed\n• Try connecting from the Xverse popup directly\n• Refresh the page and try again';
+                                } else {
+                                    errorMessage += `Error: ${error.message}\n\nIf the problem persists:\n• Make sure Xverse is unlocked\n• Try refreshing the page\n• Check that popups are allowed`;
+                                }
+                                
+                                throw new Error(errorMessage);
                             }
                         }
 
