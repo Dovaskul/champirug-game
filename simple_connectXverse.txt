@@ -1,0 +1,54 @@
+async connectXverse(xverse) {
+                try {
+                    console.log('🔗 Connecting to Xverse wallet...');
+                    
+                    if (!window.XverseProviders?.BitcoinProvider) {
+                        throw new Error('Xverse wallet not found. Please install Xverse extension.');
+                    }
+
+                    console.log('📢 Requesting addresses from Xverse...');
+                    const response = await window.XverseProviders.BitcoinProvider.request('getAddresses');
+                    console.log('📋 Xverse response:', response);
+
+                    if (!response || (!response.addresses && !response.result)) {
+                        throw new Error('No addresses returned from Xverse wallet');
+                    }
+
+                    const addresses = response.addresses || response.result?.addresses || response.result;
+                    
+                    if (!addresses || addresses.length === 0) {
+                        throw new Error('No Bitcoin addresses found in Xverse wallet');
+                    }
+
+                    // Get the payment address
+                    let address;
+                    if (Array.isArray(addresses)) {
+                        const paymentAddr = addresses.find(addr => 
+                            addr.purpose === 'payment' || addr.type === 'payment'
+                        );
+                        address = paymentAddr ? paymentAddr.address : addresses[0].address || addresses[0];
+                    } else {
+                        address = addresses.address || addresses;
+                    }
+
+                    if (!address) {
+                        throw new Error('Could not extract Bitcoin address from wallet');
+                    }
+
+                    this.address = address;
+                    this.connectedWallet = 'xverse';
+                    this.signature = 'xverse_connected_' + Date.now();
+
+                    console.log('✅ Xverse wallet connected:', this.address);
+
+                    return {
+                        address: this.address,
+                        wallet: 'Xverse',
+                        signature: this.signature
+                    };
+                    
+                } catch (error) {
+                    console.error('❌ Xverse connection failed:', error);
+                    throw new Error('Xverse connection failed: ' + error.message);
+                }
+            }

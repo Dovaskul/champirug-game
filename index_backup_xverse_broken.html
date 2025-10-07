@@ -627,60 +627,223 @@
             }
 
             // Connect to Xverse wallet
-                        async connectXverse(xverse) {
+            async connectXverse(xverse) {
+                try {
+                    console.log('🔗 Connecting to Xverse wallet...');
+                    console.log('🔍 Xverse provider object:', xverse);
+                    
+                    // Wait a bit for wallet to be ready
+                    await new Promise(resolve => setTimeout(resolve, 500));
+                    
+                    let addresses;
+                    
+                    // Modern Xverse API approach - Force popup to appear
+                    if (window.XverseProviders?.BitcoinProvider) {
+                        try {
+                            console.log('🔗 Using XverseProviders.BitcoinProvider...');
+                            
+                            // First, try to get addresses without parameters to force popup
+                            console.log('📢 Attempting to trigger Xverse popup...');
+                            
+                            // Method 1: Check if response has error
                             try {
-                                console.log('🔗 Connecting to Xverse wallet...');
-                                
-                                if (!window.XverseProviders?.BitcoinProvider) {
-                                    throw new Error('Xverse wallet not found. Please install Xverse extension.');
-                                }
-            
-                                console.log('📢 Requesting addresses from Xverse...');
                                 const response = await window.XverseProviders.BitcoinProvider.request('getAddresses');
-                                console.log('📋 Xverse response:', response);
-            
-                                if (!response || (!response.addresses && !response.result)) {
-                                    throw new Error('No addresses returned from Xverse wallet');
-                                }
-            
-                                const addresses = response.addresses || response.result?.addresses || response.result;
+                                console.log('📋 Simple request response:', response);
                                 
-                                if (!addresses || addresses.length === 0) {
-                                    throw new Error('No Bitcoin addresses found in Xverse wallet');
+                                if (response && response.error) {
+                                    console.log('⚠️ Xverse returned error:', response.error);
+                                    // This is the actual issue - Xverse needs user approval first!
+                                    throw new Error('User needs to approve connection in Xverse wallet');
                                 }
-            
-                                // Get the payment address
-                                let address;
-                                if (Array.isArray(addresses)) {
-                                    const paymentAddr = addresses.find(addr => 
-                                        addr.purpose === 'payment' || addr.type === 'payment'
-                                    );
-                                    address = paymentAddr ? paymentAddr.address : addresses[0].address || addresses[0];
-                                } else {
-                                    address = addresses.address || addresses;
-                                }
-            
-                                if (!address) {
-                                    throw new Error('Could not extract Bitcoin address from wallet');
-                                }
-            
-                                this.address = address;
-                                this.connectedWallet = 'xverse';
-                                this.signature = 'xverse_connected_' + Date.now();
-            
-                                console.log('✅ Xverse wallet connected:', this.address);
-            
-                                return {
-                                    address: this.address,
-                                    wallet: 'Xverse',
-                                    signature: this.signature
-                                };
                                 
-                            } catch (error) {
-                                console.error('❌ Xverse connection failed:', error);
-                                throw new Error('Xverse connection failed: ' + error.message);
+                                if (response && response.addresses && response.addresses.length > 0) {
+                                    addresses = response.addresses;
+                                } else if (response && response.result && response.result.addresses) {
+                                    addresses = response.result.addresses;
+                                }
+                            } catch (simpleError) {
+                                console.log('⚠️ Simple request failed:', simpleError.message);
+                                
+                                // The issue is that Xverse requires explicit user approval
+                                // We need to explain this to the user
+                                if (simpleError.message.includes('approval') || simpleError.message.includes('User')) {
+                                    throw new Error('Please open Xverse wallet and approve the connection request manually. Click the Xverse extension icon in your browser toolbar and look for a connection request.');
+                                }
+                                
+                                // Try alternative approach - maybe the wallet needs to be "activated" first
+                                try {
+                                    // Some wallets need a "connect" call first
+                                    if (window.XverseProviders.BitcoinProvider.connect) {
+                                        console.log('🔗 Trying to connect first...');
+                                        await window.XverseProviders.BitcoinProvider.connect();
+                                        
+                                        // Now try getting addresses
+                                        const response2 = await window.XverseProviders.BitcoinProvider.request('getAddresses');
+                                        console.log('📋 Post-connect response:', response2);
+                                        
+                                        if (response2 && !response2.error && response2.addresses) {
+                                            addresses = response2.addresses;
+                                        } else if (response2 && response2.result && response2.result.addresses) {
+                                            addresses = response2.result.addresses;
+                                        }
+                                    }
+                                } catch (connectError) {
+                                    console.log('⚠️ Connect method also failed:', connectError.message);
+                                    throw new Error('Unable to connect to Xverse. Please make sure:\n1. Xverse wallet is unlocked\n2. Click the Xverse icon in your browser\n3. Approve any pending connection requests\n4. Refresh the page and try again');
+                                }
                             }
+                        } catch (e) {
+                            console.log('⚠️ XverseProviders method completely failed:', e.message);
                         }
+                    }
+                    
+                    // Alternative method: Try to force connection popup
+                    if (!addresses) {
+                        try {
+                            console.log('🔗 Trying alternative connection methods...');
+                            
+                            // Method A: Use event-based approach
+                            if (window.XverseProviders?.BitcoinProvider) {
+                                console.log('� Forcing user interaction popup...');
+                                
+                                // Create a user-initiated event to ensure popup shows
+                                const userEvent = new Event('click', { bubbles: true });
+                                document.dispatchEvent(userEvent);
+                                
+                                // Wait a bit for user interaction context
+                                await new Promise(resolve => setTimeout(resolve, 100));
+                                
+                                const response = await window.XverseProviders.BitcoinProvider.request('getAddresses', {});
+                                console.log('📋 Forced popup response:', response);
+                                
+                                if (response && response.addresses && response.addresses.length > 0) {
+                                    addresses = response.addresses;
+                                }
+                            }
+                        } catch (e) {
+                            console.log('⚠️ Forced popup method failed:', e.message);
+                        }
+                    }
+                    
+                    // Method B: Legacy direct provider approach
+                    if (!addresses && xverse && typeof xverse.request === 'function') {
+                        try {
+                            console.log('🔗 Using legacy direct provider request...');
+                            
+                            const response = await xverse.request('getAddresses');
+                            console.log('📋 Legacy direct response:', response);
+                            
+                            if (response) {
+                                if (response.addresses) {
+                                    addresses = response.addresses;
+                                } else if (response.result?.addresses) {
+                                    addresses = response.result.addresses;
+                                } else if (Array.isArray(response)) {
+                                    addresses = response;
+                                }
+                            }
+                        } catch (e) {
+                            console.log('⚠️ Legacy direct request failed:', e.message);
+                        }
+                    }
+                    
+                    // Legacy fallback method
+                    if (!addresses && xverse && typeof xverse.getAddresses === 'function') {
+                        try {
+                            console.log('🔗 Using legacy getAddresses...');
+                            addresses = await xverse.getAddresses();
+                            console.log('📋 Legacy getAddresses response:', addresses);
+                        } catch (e) {
+                            console.log('⚠️ Legacy method failed:', e.message);
+                        }
+                    }
+
+                    if (!addresses || (Array.isArray(addresses) && addresses.length === 0)) {
+                        // More specific error based on what we tried
+                        let errorMsg = 'Connection to Xverse failed. ';
+                        
+                        if (window.XverseProviders?.BitcoinProvider) {
+                            errorMsg += 'Xverse is detected but no approval popup appeared.\n\n';
+                            errorMsg += '🔧 Try this:\n';
+                            errorMsg += '1. Click the Xverse extension icon in your browser\n';
+                            errorMsg += '2. Make sure it\'s unlocked\n';
+                            errorMsg += '3. Try connecting again\n';
+                            errorMsg += '4. Look for popup windows that might be blocked\n\n';
+                            errorMsg += '💡 Note: You don\'t need Bitcoin to connect, just the wallet extension.';
+                        } else {
+                            errorMsg += 'Xverse extension not properly detected.\n\n';
+                            errorMsg += 'Please refresh the page and try again.';
+                        }
+                        
+                        throw new Error(errorMsg);
+                    }
+
+                    // Extract Bitcoin payment address
+                    let address;
+                    if (Array.isArray(addresses)) {
+                        console.log('📋 Processing addresses array:', addresses);
+                        
+                        // Prefer payment address over ordinals
+                        const paymentAddr = addresses.find(addr => 
+                            addr.purpose === 'payment' || 
+                            addr.type === 'payment' ||
+                            addr.addressType === 'payment'
+                        );
+                        
+                        if (paymentAddr) {
+                            address = paymentAddr.address;
+                            console.log('✅ Found payment address:', address);
+                        } else if (addresses[0]) {
+                            // Use first available address
+                            address = addresses[0].address || addresses[0];
+                            console.log('✅ Using first available address:', address);
+                        }
+                    } else if (typeof addresses === 'object' && addresses.address) {
+                        address = addresses.address;
+                    } else if (typeof addresses === 'string') {
+                        address = addresses;
+                    }
+
+                    if (!address) {
+                        throw new Error('Could not extract valid Bitcoin address from Xverse wallet response');
+                    }
+
+                    // Validate Bitcoin address format
+                    if (!address.match(/^[13][a-km-zA-HJ-NP-Z1-9]{25,34}$|^bc1[a-z0-9]{39,59}$/)) {
+                        console.warn('⚠️ Address format might be invalid:', address);
+                    }
+
+                    this.address = address;
+                    this.connectedWallet = 'xverse';
+
+                    console.log('✅ Xverse wallet connected successfully:', this.address);
+                    
+                    // Skip message signing for now to avoid JSON parsing issues
+                    this.signature = 'xverse_connected_' + Date.now();
+
+                    return {
+                        address: this.address,
+                        wallet: 'Xverse',
+                        signature: this.signature
+                    };
+                    
+                } catch (error) {
+                    console.error('❌ Xverse connection failed:', error);
+                    
+                    // Provide more specific error messages
+                    let errorMessage = 'Xverse connection failed. ';
+                    
+                    if (error.message.includes('JSON')) {
+                        errorMessage += 'There was a communication error with your wallet. Please try:\n1. Refreshing the page\n2. Restarting your browser\n3. Updating Xverse extension';
+                    } else if (error.message.includes('addresses')) {
+                        errorMessage += 'Could not access wallet addresses. Please make sure:\n1. Xverse wallet is unlocked\n2. You approve the connection request\n3. You have Bitcoin addresses in your wallet';
+                    } else {
+                        errorMessage += error.message;
+                    }
+                    
+                    throw new Error(errorMessage);
+                }
+            }
 
             // Get display name for address (truncated)
             getDisplayName() {
