@@ -2369,7 +2369,7 @@ Thank you for supporting indie game development! 🍄`;
                 if (!this.isRunning) return;
                 
                 console.log('⬇️ MOVING DOWN!');
-                this.player.y = Math.max(this.player.y - 40, 0);
+                this.player.y = Math.max(this.player.y - 40, 20); /* Límite inferior en césped verde */
                 this.playerElement.style.bottom = this.player.y + 'px';
                 this.playerElement.style.filter = 'brightness(0.8)';
                 this.jumpStatusEl.textContent = `⬇️ Down: Y=${this.player.y}`;
@@ -2420,12 +2420,12 @@ Thank you for supporting indie game development! 🍄`;
                 this.instructionsEl.style.display = 'none';
                 this.gameOverEl.style.display = 'none';
                 
-                // Reset player
+                // Reset player - posicionar en zona de césped verde
                 this.player.x = 80;
-                this.player.y = 0;
+                this.player.y = 20; /* Posición inicial en césped verde, no en tierra */
                 this.player.isJumping = false;
                 this.player.jumpForce = 0;
-                this.playerElement.style.bottom = '0px';
+                this.playerElement.style.bottom = '20px'; /* Césped verde zona */
                 this.playerElement.style.left = '80px';
                 
                 // Start background music
@@ -3023,13 +3023,13 @@ Thank you for supporting indie game development! 🍄`;
                 this.score = 0;
                 this.time = 0;
                 this.player.x = 80;
-                this.player.y = 0;
+                this.player.y = 20; /* Césped verde, no tierra */
                 
                 // Reset UI
                 this.scoreEl.textContent = '0';
                 this.timeEl.textContent = '0';
                 this.playerElement.style.left = '80px';
-                this.playerElement.style.bottom = '0px';
+                this.playerElement.style.bottom = '20px'; /* Césped verde zona */
                 this.jumpStatusEl.textContent = '🔄 Status: Waiting...';
                 
                 // Update leaderboard display
