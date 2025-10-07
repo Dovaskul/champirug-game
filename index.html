@@ -115,11 +115,32 @@
             transform: translate(-50%, -50%);
             background: rgba(0,0,0,0.95);
             color: white;
-            padding: 30px;
-            border-radius: 15px;
+            padding: 15px;
+            border-radius: 10px;
             text-align: center;
-            border: 3px solid #FFD700;
-            font-size: 18px;
+            border: 2px solid #FFD700;
+            font-size: 14px;
+            max-width: 380px;
+            width: 80%;
+            line-height: 1.3;
+        }
+
+        .instructions h1 {
+            font-size: 1.6em;
+            margin: 0 0 5px 0;
+            color: #FFD700;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.8);
+        }
+
+        .instructions h2 {
+            font-size: 1.1em;
+            margin: 0 0 15px 0;
+            color: #FFD700;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.8);
+        }
+
+        .instructions p {
+            margin: 8px 0;
         }
         
         .game-over {
@@ -269,6 +290,7 @@
             max-width: 400px;
             width: 90%;
             box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            position: relative; /* Para que el botón X se posicione correctamente */
         }
 
         .wallet-modal h3 {
@@ -326,16 +348,66 @@
             position: absolute;
             top: 10px;
             right: 15px;
-            background: none;
+            background: rgba(0, 0, 0, 0.1);
             border: none;
             font-size: 20px;
             cursor: pointer;
             color: #666;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            transition: all 0.2s ease;
+        }
+
+        .wallet-close:hover {
+            background: rgba(255, 0, 0, 0.1);
+            color: #d32f2f;
+            transform: scale(1.1);
         }
         
         /* Animaciones */
         .player.jumping {
             animation: jump 0.3s ease-out;
+        }
+
+        /* VERSION BADGE */
+        .version-badge {
+            position: fixed;
+            top: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0, 0, 0, 0.8);
+            color: #FFD700;
+            padding: 6px 16px;
+            border-radius: 20px;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            font-weight: bold;
+            border: 2px solid #FFD700;
+            z-index: 1000;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+            min-width: 60px;
+            text-align: center;
+        }
+
+        /* OCULTAR DEBUG PANEL POR DEFECTO - PERO PERMITIR MOSTRAR */
+        #xverseDebugLog {
+            display: none;
+            visibility: hidden;
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        /* CLASE PARA MOSTRAR DEBUG LOG CUANDO SE NECESITE */
+        #xverseDebugLog.show-debug {
+            display: block !important;
+            visibility: visible !important;
+            opacity: 1 !important;
+            pointer-events: auto !important;
         }
 
         /* CONTROLES MÓVILES - CRUCETA VIRTUAL */
@@ -424,6 +496,55 @@
         @media (max-width: 768px) {
             .mobile-controls {
                 display: block;
+                bottom: 10px;
+                left: 0;
+                right: 0;
+                transform: none;
+                width: 100%;
+                height: 120px; /* ~3cm en 6.7" */
+            }
+
+            .dpad {
+                width: 100%;
+                max-width: 300px;
+                height: 120px;
+                margin: 0 auto;
+                border-radius: 20px;
+                background: rgba(0, 0, 0, 0.4);
+                border: 3px solid rgba(255, 255, 255, 0.6);
+            }
+
+            .dpad-button {
+                width: 50px;
+                height: 50px;
+                font-size: 20px;
+                border-radius: 12px;
+                background: rgba(255, 255, 255, 0.9);
+                border: 3px solid #333;
+            }
+
+            .dpad-up {
+                top: 10px;
+                left: 50%;
+                transform: translateX(-50%);
+            }
+
+            .dpad-down {
+                bottom: 10px;
+                left: 50%;
+                transform: translateX(-50%);
+            }
+
+            .dpad-left {
+                left: 20px;
+                top: 50%;
+                transform: translateY(-50%);
+            }
+
+            .dpad-right {
+                right: 20px;
+                top: 50%;
+                transform: translateY(-50%);
             }
 
             .desktop-controls {
@@ -434,43 +555,55 @@
                 display: block !important;
             }
 
+            /* Reposicionar elementos para evitar superposición */
+            .ui-panel {
+                top: 50px; /* Espacio para version badge */
+                font-size: 14px;
+                padding: 8px;
+                right: 10px;
+                left: auto;
+                max-width: calc(100vw - 20px);
+            }
+
+            .leaderboard {
+                top: 50px; /* Espacio para version badge */
+                font-size: 11px;
+                padding: 8px;
+                max-width: 180px;
+            }
+
+            .version-badge {
+                top: 5px;
+                font-size: 12px;
+                padding: 4px 12px;
+                left: 50%;
+                transform: translateX(-50%);
+            }
+
             .instructions {
                 padding: 20px;
                 font-size: 16px;
                 max-width: 90vw;
-            }
-
-            .instructions h2 {
-                font-size: 24px;
+                margin-top: 40px; /* Espacio para version badge */
+                max-width: 320px;
             }
 
             .game-over {
                 padding: 20px;
                 font-size: 16px;
                 max-width: 90vw;
+                margin-top: 40px; /* Espacio para version badge */
             }
 
             .game-over h1 {
-                font-size: 28px;
-            }
-
-            .ui-panel {
-                font-size: 16px;
-                padding: 10px;
-                right: 10px;
-                left: auto;
-            }
-
-            .leaderboard {
-                font-size: 12px;
-                padding: 10px;
-                max-width: 200px;
+                font-size: 26px;
             }
 
             .wallet-modal-content {
                 width: 90%;
                 max-width: 400px;
                 padding: 20px;
+                margin-top: 40px; /* Espacio para version badge */
             }
 
             .wallet-button {
@@ -478,9 +611,116 @@
                 font-size: 16px;
             }
 
+            /* Ajustar posición del jugador */
+            #player {
+                margin-bottom: 140px; /* Espacio para cruceta */
+            }
+
             /* Ocultar debug panel en móviles */
             #xverseDebugLog {
                 display: none !important;
+            }
+        }
+
+        /* ADAPTACIONES RESOLUCIÓN MEDIA */
+        @media (max-width: 1200px) and (min-width: 769px) {
+            .ui-panel {
+                font-size: 14px;
+                padding: 12px;
+            }
+
+            .leaderboard {
+                font-size: 12px;
+                padding: 12px;
+            }
+
+            .instructions {
+                font-size: 13px;
+                padding: 15px;
+                max-width: 360px;
+            }
+
+            .version-badge {
+                font-size: 13px;
+            }
+        }
+
+        /* ADAPTACIONES PANTALLAS PEQUEÑAS */
+        @media (max-width: 480px) {
+            .dpad {
+                max-width: 280px;
+                height: 100px;
+            }
+
+            .dpad-button {
+                width: 45px;
+                height: 45px;
+                font-size: 18px;
+            }
+
+            .ui-panel, .leaderboard {
+                font-size: 10px;
+                padding: 6px;
+            }
+
+            .instructions {
+                font-size: 13px;
+                padding: 15px;
+            }
+
+            .version-badge {
+                font-size: 11px;
+                padding: 3px 10px;
+                left: 50%;
+                transform: translateX(-50%);
+            }
+        }
+
+        /* ADAPTACIONES DESKTOP - Evitar superposiciones */
+        @media (min-width: 769px) {
+            .ui-panel {
+                top: 60px; /* Espacio para version badge */
+                left: 20px; /* UI Panel a la izquierda */
+                width: auto;
+                max-width: 300px;
+                font-size: 16px; /* Tamaño ajustado */
+            }
+
+            .leaderboard {
+                top: 60px; /* Espacio para version badge */
+                right: 20px; /* Leaderboard a la derecha */
+                width: auto;
+                max-width: 280px;
+                font-size: 14px; /* Tamaño ajustado */
+            }
+
+            .version-badge {
+                top: 10px;
+                left: 50%; /* Centrado */
+                transform: translateX(-50%); /* Centrado perfecto */
+            }
+
+            .instructions {
+                max-width: 380px;
+                width: 80%;
+                font-size: 14px;
+                padding: 15px;
+            }
+
+            .game-over {
+                max-width: 500px;
+                width: 85%;
+                font-size: 16px;
+            }
+
+            .wallet-modal-content {
+                margin-top: 60px;
+            }
+
+            /* Ocultar debug panel completamente en desktop también */
+            #xverseDebugLog {
+                display: none !important;
+                visibility: hidden !important;
             }
         }
 
@@ -540,6 +780,11 @@
 </head>
 <body>
     <div id="gameContainer">
+        <!-- Version Badge -->
+        <div id="versionBadge" class="version-badge">
+            v5.15
+        </div>
+
         <!-- UI Panel -->
         <div class="ui-panel">
             <div>🍄 Score: <span id="score">0</span></div>
@@ -551,7 +796,8 @@
                 <button onclick="game.audio.toggleMute()" style="background:#FFD700;border:none;padding:5px;border-radius:3px;cursor:pointer;margin-right:5px;">🔊 Music</button>
                 <button id="walletConnectBtn" onclick="game.connectWallet()" style="background:#FF8C00;border:none;padding:5px;border-radius:3px;cursor:pointer;font-size:11px;margin-right:5px;">₿ Connect Wallet</button>
                 <button onclick="game.showDonation()" style="background:#9370DB;border:none;padding:5px;border-radius:3px;cursor:pointer;font-size:11px;margin-right:5px;">💜 Donate</button>
-                <button onclick="runDiagnosticAndShow()" style="background:#FF4500;color:white;border:none;padding:5px;border-radius:3px;cursor:pointer;font-size:11px;">🔬 Debug</button>
+                <button onclick="runDiagnosticAndShow()" style="background:#FF4500;color:white;border:none;padding:5px;border-radius:3px;cursor:pointer;font-size:11px;margin-right:5px;">🔬 Debug</button>
+                <button onclick="downloadXverseLogs()" style="background:#00aa00;color:white;border:none;padding:5px;border-radius:3px;cursor:pointer;font-size:11px;">📥 Logs</button>
             </div>
         </div>
 
@@ -570,28 +816,15 @@
         <div id="instructions" class="instructions">
             <h1>🍄 CHAMPIRUG 🍄</h1>
             <h2>The Controllable Mushroom!</h2>
-            <br>
+            
             <p><strong>🎮 CONTROLS:</strong></p>
-            <p class="desktop-controls">⬆️ UP ARROW = Move Up</p>
-            <p class="desktop-controls">⬇️ DOWN ARROW = Move Down</p>
-            <p class="desktop-controls">⬅️ LEFT ARROW = Move Left</p>
-            <p class="desktop-controls">➡️ RIGHT ARROW = Move Right</p>
-            <p class="desktop-controls">SPACE = Start Game</p>
-            <p class="mobile-controls-text" style="display: none;">📱 Use the virtual D-pad below to move</p>
-            <p class="mobile-controls-text" style="display: none;">👆 Tap anywhere to start game</p>
-            <br>
-            <p><strong>🎯 OBJECTIVE:</strong></p>
-            <p>🐻 Avoid the bears</p>
-            <p>🪙 Collect the coins</p>
-            <br>
-            <p><strong>🔑 BITCOIN WALLET AUTH:</strong></p>
-            <p>₿ Click <span style="color:#FF8C00;">Connect Wallet</span> button above</p>
-            <p>🚀 Supports Unisat & Xverse wallets</p>
-            <p>🌐 Compete globally with crypto identity</p>
-            <br>
-            <p><strong>💜 SUPPORT DEVELOPMENT:</strong></p>
-            <p>💜 Click <span style="color:#9370DB;">Donate</span> button (you will receive nothing)</p>
-            <br>
+            <p class="desktop-controls">⬆️⬇️⬅️➡️ Arrow keys to move • SPACE to start</p>
+            <p class="mobile-controls-text" style="display: none;">📱 Use D-pad below • Tap to start</p>
+            
+            <p><strong>🎯 GOAL:</strong> 🐻 Avoid bears • 🪙 Collect coins</p>
+            
+            <p><strong>🔑 WALLET:</strong> ₿ Connect for global leaderboard</p>
+            
             <p class="desktop-controls"><strong style="color: #FFD700;">Press SPACE to start!</strong></p>
             <p class="mobile-controls-text" style="display: none;"><strong style="color: #FFD700;">Tap to start!</strong></p>
         </div>
@@ -618,6 +851,8 @@
             width: 450px;
             max-height: 600px;
             background: rgba(0, 0, 0, 0.95);
+            display: none !important;
+            visibility: hidden !important;
             color: #00FF00;
             font-family: 'Courier New', monospace;
             font-size: 11px;
@@ -634,7 +869,8 @@
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
                 <h3 style="margin: 0; color: #00FF00;">🔍 XVERSE DEBUG LOG (F12=toggle)</h3>
                 <div>
-                    <button onclick="xverseLogger.toggleVisibility()" style="background: #0066ff; color: white; border: none; padding: 2px 6px; border-radius: 3px; cursor: pointer; margin-right: 5px;">Hide</button>
+                    <button onclick="window.xverseLogger.downloadLogs()" style="background: #00aa00; color: white; border: none; padding: 2px 6px; border-radius: 3px; cursor: pointer; margin-right: 5px;">📥 Download</button>
+                    <button onclick="window.xverseLogger.toggleVisibility()" style="background: #0066ff; color: white; border: none; padding: 2px 6px; border-radius: 3px; cursor: pointer; margin-right: 5px;">Hide</button>
                     <button onclick="clearXverseLog()" style="background: #ff0000; color: white; border: none; padding: 2px 6px; border-radius: 3px; cursor: pointer;">Clear</button>
                 </div>
             </div>
@@ -651,7 +887,9 @@
         class XverseDebugLogger {
             constructor() {
                 this.logs = [];
+                this.fileLogs = []; // Separate logs for file export
                 this.isVisible = false; // Start hidden
+                this.sessionId = 'xverse_debug_' + Date.now();
                 this.init();
             }
 
@@ -667,11 +905,17 @@
                 // Auto-show on Xverse errors
                 this.log('🔍 XverseDebugLogger initialized. Press F12 to toggle visibility.');
                 this.log('📋 Starting Xverse environment analysis...');
+                
+                // Log initial Xverse detection
+                this.logObject('🌍 Initial window.XverseProviders', window.XverseProviders);
+                this.logObject('🌍 Initial window.satsConnect', window.satsConnect);
+                this.logObject('🌍 Initial window.unisat', window.unisat);
                 this.analyzeEnvironment();
             }
 
             log(message, type = 'info') {
                 const timestamp = new Date().toLocaleTimeString();
+                const fullTimestamp = new Date().toISOString();
                 const logEntry = {
                     timestamp,
                     message,
@@ -679,6 +923,17 @@
                 };
                 
                 this.logs.push(logEntry);
+                
+                // Also log to file with more detailed info
+                const fileLogEntry = {
+                    sessionId: this.sessionId,
+                    timestamp: fullTimestamp,
+                    message,
+                    type,
+                    url: window.location.href,
+                    userAgent: navigator.userAgent.substring(0, 100) // Truncate for space
+                };
+                this.fileLogs.push(fileLogEntry);
                 
                 // Also log to console
                 const consoleMessage = `[${timestamp}] ${message}`;
@@ -699,6 +954,69 @@
                 if (type === 'error') {
                     this.show();
                 }
+            }
+
+            // Log complex objects with detailed inspection
+            logObject(label, obj, type = 'info') {
+                this.log(`${label}:`, type);
+                
+                try {
+                    const objectInfo = {
+                        type: typeof obj,
+                        isArray: Array.isArray(obj),
+                        isNull: obj === null,
+                        isUndefined: obj === undefined,
+                        constructor: obj?.constructor?.name,
+                        keys: obj && typeof obj === 'object' ? Object.keys(obj) : null,
+                        length: obj?.length,
+                        stringified: JSON.stringify(obj, null, 2)
+                    };
+                    
+                    // Log to file with full object details
+                    const fileLogEntry = {
+                        sessionId: this.sessionId,
+                        timestamp: new Date().toISOString(),
+                        label,
+                        objectInfo,
+                        type: 'object_inspection',
+                        url: window.location.href
+                    };
+                    this.fileLogs.push(fileLogEntry);
+                    
+                    this.log(`- Type: ${objectInfo.type}`);
+                    this.log(`- Constructor: ${objectInfo.constructor || 'unknown'}`);
+                    if (objectInfo.keys) {
+                        this.log(`- Keys: ${objectInfo.keys.join(', ')}`);
+                    }
+                    this.log(`- JSON: ${objectInfo.stringified?.substring(0, 200)}${objectInfo.stringified?.length > 200 ? '...' : ''}`);
+                    
+                } catch (error) {
+                    this.log(`- Error inspecting object: ${error.message}`, 'error');
+                }
+            }
+
+            // Download logs as JSON file
+            downloadLogs() {
+                const logData = {
+                    sessionId: this.sessionId,
+                    generatedAt: new Date().toISOString(),
+                    browserInfo: {
+                        userAgent: navigator.userAgent,
+                        url: window.location.href,
+                        title: document.title
+                    },
+                    logs: this.fileLogs
+                };
+                
+                const dataStr = JSON.stringify(logData, null, 2);
+                const dataBlob = new Blob([dataStr], {type: 'application/json'});
+                
+                const link = document.createElement('a');
+                link.href = URL.createObjectURL(dataBlob);
+                link.download = `xverse_debug_logs_${this.sessionId}.json`;
+                link.click();
+                
+                this.log('📥 Debug logs downloaded!', 'info');
             }
 
             analyzeEnvironment() {
@@ -789,7 +1107,7 @@
             show() {
                 const logElement = document.getElementById('xverseDebugLog');
                 if (logElement) {
-                    logElement.style.display = 'block';
+                    logElement.classList.add('show-debug');
                     logElement.style.zIndex = '99999999';
                     logElement.style.position = 'fixed';
                     this.isVisible = true;
@@ -803,7 +1121,7 @@
             hide() {
                 const logElement = document.getElementById('xverseDebugLog');
                 if (logElement) {
-                    logElement.style.display = 'none';
+                    logElement.classList.remove('show-debug');
                     this.isVisible = false;
                 }
             }
@@ -830,11 +1148,31 @@
         }
 
         // Initialize debug logger
-        const xverseLogger = new XverseDebugLogger();
+        window.xverseLogger = new XverseDebugLogger();
 
         // Clear log function for button
         function clearXverseLog() {
-            xverseLogger.clear();
+            window.xverseLogger.clear();
+        }
+
+        // Download logs function for main UI button
+        function downloadXverseLogs() {
+            if (window.xverseLogger && window.xverseLogger.fileLogs.length > 0) {
+                window.xverseLogger.downloadLogs();
+                
+                // Mostrar temporalmente el debug panel
+                window.xverseLogger.show();
+                setTimeout(() => {
+                    alert('📥 Logs downloaded!\n\nCheck your Downloads folder for:\nxverse_debug_logs_*.json\n\nDebug panel will auto-hide in 5 seconds.');
+                }, 100);
+                
+                // Auto-hide después de 5 segundos
+                setTimeout(() => {
+                    window.xverseLogger.hide();
+                }, 5000);
+            } else {
+                alert('📝 No logs available yet.\n\nTo generate logs:\n1. Click "₿ Connect Wallet"\n2. Try connecting with Xverse\n3. Then download logs');
+            }
         }
 
         // Bitcoin Wallet Authentication
@@ -847,7 +1185,7 @@
 
             // Check which wallets are available
             getAvailableWallets() {
-                xverseLogger.log('🔍 === WALLET DETECTION STARTED ===');
+                window.xverseLogger.log('🔍 === WALLET DETECTION STARTED ===');
                 const wallets = [];
                 
                 // Check for Unisat
@@ -858,14 +1196,14 @@
                         type: 'unisat',
                         logo: '🟠' // Orange circle for Unisat
                     });
-                    xverseLogger.log('✅ Unisat wallet detected and added');
+                    window.xverseLogger.log('✅ Unisat wallet detected and added');
                 }
                 
                 // Check for Xverse using multiple detection methods
                 let xverseAvailable = false;
                 let xverseProvider = null;
                 
-                xverseLogger.log('🔍 Starting Xverse detection process...');
+                window.xverseLogger.log('🔍 Starting Xverse detection process...');
                 
                 // Detection methods in order of preference
                 const xverseDetectionMethods = [
@@ -877,18 +1215,18 @@
                 ];
                 
                 for (const method of xverseDetectionMethods) {
-                    xverseLogger.log(`🔍 Checking ${method.name}...`);
+                    window.xverseLogger.log(`🔍 Checking ${method.name}...`);
                     if (method.provider) {
-                        xverseLogger.log(`✅ Found Xverse via ${method.name} ${method.preferred ? '(recommended)' : '(fallback)'}`);
-                        xverseLogger.log(`   📋 Provider type: ${typeof method.provider}`);
+                        window.xverseLogger.log(`✅ Found Xverse via ${method.name} ${method.preferred ? '(recommended)' : '(fallback)'}`);
+                        window.xverseLogger.log(`   📋 Provider type: ${typeof method.provider}`);
                         if (typeof method.provider === 'object') {
-                            xverseLogger.log(`   🔑 Provider keys: ${Object.keys(method.provider).slice(0, 10).join(', ')}`);
+                            window.xverseLogger.log(`   🔑 Provider keys: ${Object.keys(method.provider).slice(0, 10).join(', ')}`);
                         }
                         xverseAvailable = true;
                         xverseProvider = method.provider;
                         break;
                     } else {
-                        xverseLogger.log(`❌ ${method.name} not found`);
+                        window.xverseLogger.log(`❌ ${method.name} not found`);
                     }
                 }
                 
@@ -899,17 +1237,17 @@
                         type: 'xverse',
                         logo: '🟣' // Purple circle for Xverse
                     });
-                    xverseLogger.log('✅ Xverse wallet added to available wallets');
+                    window.xverseLogger.log('✅ Xverse wallet added to available wallets');
                 } else {
-                    xverseLogger.log('❌ Xverse not detected. Extension may not be installed.', 'warn');
+                    window.xverseLogger.log('❌ Xverse not detected. Extension may not be installed.', 'warn');
                     
                     // Check if Xverse might be loading (common with extensions)
                     setTimeout(() => {
                         const delayedCheck = window.satsConnect || window.XverseProviders?.BitcoinProvider || window.BitcoinProvider;
                         if (delayedCheck) {
-                            xverseLogger.log('⏰ Xverse detected after 2s delay - page refresh may help', 'warn');
+                            window.xverseLogger.log('⏰ Xverse detected after 2s delay - page refresh may help', 'warn');
                         } else {
-                            xverseLogger.log('❌ Xverse still not detected after delay', 'error');
+                            window.xverseLogger.log('❌ Xverse still not detected after delay', 'error');
                         }
                     }, 2000);
                 }
@@ -922,7 +1260,7 @@
                     wallets: wallets.map(w => `${w.name} (${w.type})`)
                 };
                 
-                xverseLogger.log(`🔍 Wallet detection complete: ${JSON.stringify(detectionSummary)}`);
+                window.xverseLogger.log(`🔍 Wallet detection complete: ${JSON.stringify(detectionSummary)}`);
                 
                 return wallets;
             }
@@ -989,9 +1327,9 @@
             // Connect to Xverse wallet using native browser APIs
             async connectXverse(xverse) {
                 try {
-                    xverseLogger.log('🔗 === XVERSE CONNECTION ATTEMPT STARTED ===');
-                    xverseLogger.log(`📋 Called with provider: ${typeof xverse}`);
-                    xverseLogger.show(); // Show debug window during connection
+                    window.xverseLogger.log('🔗 === XVERSE CONNECTION ATTEMPT STARTED ===');
+                    window.xverseLogger.log(`📋 Called with provider: ${typeof xverse}`);
+                    window.xverseLogger.show(); // Necesario para ver errores de conexión
                     
                     // Method 1: Try modern window.satsConnect (injected by Xverse extension)
                     if (window.satsConnect && typeof window.satsConnect.request === 'function') {
@@ -1034,10 +1372,34 @@
                         console.log('📤 Sending getAccounts request with options:', requestOptions);
                         const response = await window.XverseProviders.BitcoinProvider.request('getAccounts', requestOptions);
                         console.log('📋 XverseProviders getAccounts response:', response);
-                        console.log('📋 Response type:', typeof response);
-                        console.log('📋 Response keys:', response ? Object.keys(response) : 'null/undefined');
-                        console.log('📋 Response.result:', response?.result);
-                        console.log('📋 Response.addresses:', response?.addresses);
+                        window.xverseLogger.logObject('📋 XverseProviders getAccounts response', response);
+                        
+                        // Deep inspect the response structure
+                        if (response) {
+                            window.xverseLogger.log('🔍 DEEP RESPONSE ANALYSIS:');
+                            
+                            // Check all possible paths
+                            const possiblePaths = [
+                                'response.result.addresses',
+                                'response.addresses', 
+                                'response.result',
+                                'response',
+                                'response.accounts',
+                                'response.result.accounts'
+                            ];
+                            
+                            possiblePaths.forEach(path => {
+                                try {
+                                    const value = eval(path);
+                                    if (value) {
+                                        window.xverseLogger.log(`🎯 Found data at ${path}`);
+                                        window.xverseLogger.logObject(`Data at ${path}`, value);
+                                    }
+                                } catch (e) {
+                                    // Silent catch
+                                }
+                            });
+                        }
                         
                         // Process getAccounts response - try multiple possible formats
                         let addresses = null;
@@ -1054,38 +1416,86 @@
                         } else if (response?.result && Array.isArray(response.result)) {
                             addresses = response.result;
                             console.log('📮 Using response.result array format:', addresses);
+                        } else if (response?.accounts && Array.isArray(response.accounts)) {
+                            addresses = response.accounts;
+                            console.log('📮 Using response.accounts format:', addresses);
+                        } else if (response?.result?.accounts && Array.isArray(response.result.accounts)) {
+                            addresses = response.result.accounts;
+                            console.log('📮 Using response.result.accounts format:', addresses);
                         }
                         
                         if (addresses && addresses.length > 0) {
                             console.log('📮 Processing addresses:', addresses);
                             
+                            // Log each address for debugging
+                            addresses.forEach((addr, index) => {
+                                window.xverseLogger.logObject(`🏠 Address ${index}`, addr);
+                            });
+                            
                             // Find payment address with flexible matching
                             const paymentAddr = addresses.find(addr => 
                                 (addr.purpose && (addr.purpose.toLowerCase() === 'payment' || addr.purpose === 'Payment')) ||
                                 (addr.type && addr.type.toLowerCase().includes('payment')) ||
-                                (addr.addressType && addr.addressType.toLowerCase().includes('payment'))
+                                (addr.addressType && addr.addressType.toLowerCase().includes('payment')) ||
+                                (typeof addr === 'string') // Simple string address
                             );
                             
                             const selectedAddr = paymentAddr || addresses[0];
-                            let address = selectedAddr?.address || selectedAddr;
+                            window.xverseLogger.logObject('🎯 Selected address object', selectedAddr);
                             
-                            // Handle case where address might be nested or just a string
-                            if (typeof address === 'object' && address.address) {
-                                address = address.address;
+                            let address = null;
+                            
+                            // Try multiple ways to extract address
+                            if (typeof selectedAddr === 'string') {
+                                address = selectedAddr;
+                                console.log('✅ Address extracted as string:', address);
+                            } else if (selectedAddr?.address) {
+                                address = selectedAddr.address;
+                                console.log('✅ Address extracted from .address property:', address);
+                            } else if (selectedAddr?.publicKey) {
+                                address = selectedAddr.publicKey;
+                                console.log('✅ Address extracted from .publicKey property:', address);
+                            } else if (selectedAddr?.accountAddress) {
+                                address = selectedAddr.accountAddress;
+                                console.log('✅ Address extracted from .accountAddress property:', address);
+                            } else {
+                                // Try to find any property that looks like a Bitcoin address
+                                if (typeof selectedAddr === 'object') {
+                                    for (const [key, value] of Object.entries(selectedAddr)) {
+                                        if (typeof value === 'string' && value.length > 20 && (value.startsWith('bc1') || value.startsWith('1') || value.startsWith('3'))) {
+                                            address = value;
+                                            console.log(`✅ Address found in property ${key}:`, address);
+                                            break;
+                                        }
+                                    }
+                                }
                             }
                             
-                            if (typeof address === 'string' && address.length > 0) {
+                            if (typeof address === 'string' && address.length > 10) {
                                 this.address = address;
                                 this.connectedWallet = 'xverse';
                                 this.signature = 'xverse_connected_' + Date.now();
                                 
-                                console.log('✅ Xverse connected successfully with getAccounts:', this.address);
-                                console.log('🔗 Selected address details:', selectedAddr);
+                                window.xverseLogger.log('✅ Xverse connected successfully with getAccounts: ' + this.address);
+                                window.xverseLogger.logObject('🔗 Final connection details', {
+                                    address: this.address,
+                                    wallet: 'Xverse',
+                                    signature: this.signature,
+                                    selectedAddr: selectedAddr
+                                });
+                                
                                 return {
                                     address: this.address,
                                     wallet: 'Xverse',
                                     signature: this.signature
                                 };
+                            } else {
+                                window.xverseLogger.log('❌ Could not extract valid address string', 'error');
+                                window.xverseLogger.logObject('❌ Invalid address data', { 
+                                    extractedAddress: address, 
+                                    type: typeof address,
+                                    selectedAddr: selectedAddr 
+                                }, 'error');
                             }
                         }
                         
@@ -2197,19 +2607,24 @@ Thank you for supporting indie game development! 🍄`;
             async connectWallet() {
                 try {
                     console.log('🔗 Manual wallet connection requested...');
+                    console.log('🔍 DEBUG: connectWallet method called');
                     
                     if (walletAuth.isConnected()) {
                         alert('✅ Wallet already connected!\n\nAddress: ' + walletAuth.address);
                         return;
                     }
+                    
+                    console.log('🔍 DEBUG: Wallet not connected, proceeding...');
 
                     // Check available wallets with retry (sometimes wallets need time to inject)
                     let availableWallets = walletAuth.getAvailableWallets();
+                    console.log('🔍 DEBUG: Initial wallet detection result:', availableWallets.length, 'wallets found');
                     
                     if (availableWallets.length === 0) {
                         console.log('⏳ No wallets found, waiting and retrying...');
                         await new Promise(resolve => setTimeout(resolve, 1000));
                         availableWallets = walletAuth.getAvailableWallets();
+                        console.log('🔍 DEBUG: After retry, found:', availableWallets.length, 'wallets');
                     }
                     
                     if (availableWallets.length === 0) {
@@ -2259,6 +2674,7 @@ Thank you for supporting indie game development! 🍄`;
                     }
 
                     // Multiple wallets - show visual selector
+                    console.log('🔍 DEBUG: Showing wallet modal with', availableWallets.length, 'wallets');
                     this.showWalletModal(availableWallets);
                     
                 } catch (error) {
@@ -2878,11 +3294,20 @@ Thank you for supporting indie game development! 🍄`;
             }, 1000);
             
             game = new ChampiGame();
+            console.log('🔍 DEBUG: Game created:', typeof game);
+            console.log('🔍 DEBUG: connectWallet method:', typeof game.connectWallet);
             
             // Update wallet status on page load
             setTimeout(() => {
                 game.updateWalletStatus();
                 console.log('✅ Wallet status updated on page load');
+                
+                // Verify button is working
+                const btn = document.getElementById('walletConnectBtn');
+                console.log('🔍 DEBUG: Connect button found:', !!btn);
+                if (btn) {
+                    console.log('🔍 DEBUG: Button has onclick:', !!btn.onclick);
+                }
             }, 500);
             
             // Periodic check for late-injected wallets
