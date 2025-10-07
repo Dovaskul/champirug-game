@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>🍄 Champirug Game v5.16.0 - Critical Mobile Fixes!</title>
+    <title>🍄 Champirug Game v5.17.0 - Grass Zone Gameplay!</title>
     <link rel="icon" type="image/x-icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2280%22>🍄</text></svg>">
     <style>
         * {
@@ -36,7 +36,7 @@
             position: absolute;
             width: min(8vw, 8vh, 80px);
             height: min(8vw, 8vh, 80px);
-            bottom: 20px; /* Posición inicial en césped verde, no en tierra */
+            bottom: 200px; /* Posición inicial en medio del césped verde */
             left: 80px;
             z-index: 100;
             
@@ -834,7 +834,7 @@
     <div id="gameContainer">
         <!-- Version Badge -->
         <div id="versionBadge" class="version-badge">
-            v5.16.0
+            v5.17.0
         </div>
 
         <!-- UI Panel -->
@@ -2101,7 +2101,7 @@
                 // Player physics with dynamic sizing
                 this.player = {
                     x: 80,
-                    y: 20, /* Posición inicial en césped verde, no en tierra */
+                    y: 200, /* Posición inicial en medio del césped verde */
                     width: this.playerSize,
                     height: this.playerSize,
                     isJumping: false,
@@ -2355,7 +2355,7 @@ Thank you for supporting indie game development! 🍄`;
                 if (!this.isRunning) return;
                 
                 console.log('⬆️ MOVING UP!');
-                this.player.y = Math.min(this.player.y + 40, 80); /* Limitar altura para no entrar en el cielo */
+                this.player.y = Math.min(this.player.y + 40, 320); /* Límite superior: zona alta del césped verde */
                 this.playerElement.style.bottom = this.player.y + 'px';
                 this.playerElement.style.filter = 'brightness(1.3)';
                 this.jumpStatusEl.textContent = `⬆️ Up: Y=${this.player.y}`;
@@ -2369,7 +2369,7 @@ Thank you for supporting indie game development! 🍄`;
                 if (!this.isRunning) return;
                 
                 console.log('⬇️ MOVING DOWN!');
-                this.player.y = Math.max(this.player.y - 40, 20); /* Límite inferior en césped verde */
+                this.player.y = Math.max(this.player.y - 40, 160); /* Límite inferior: zona baja del césped verde */
                 this.playerElement.style.bottom = this.player.y + 'px';
                 this.playerElement.style.filter = 'brightness(0.8)';
                 this.jumpStatusEl.textContent = `⬇️ Down: Y=${this.player.y}`;
@@ -2422,10 +2422,10 @@ Thank you for supporting indie game development! 🍄`;
                 
                 // Reset player - posicionar en zona de césped verde
                 this.player.x = 80;
-                this.player.y = 20; /* Posición inicial en césped verde, no en tierra */
+                this.player.y = 200; /* Posición inicial en medio del césped verde */
                 this.player.isJumping = false;
                 this.player.jumpForce = 0;
-                this.playerElement.style.bottom = '20px'; /* Césped verde zona */
+                this.playerElement.style.bottom = '200px'; /* Medio del césped verde */
                 this.playerElement.style.left = '80px';
                 
                 // Start background music
@@ -2444,7 +2444,7 @@ Thank you for supporting indie game development! 🍄`;
 
             spawnEnemy() {
                 const containerWidth = this.container.offsetWidth || 1200;
-                const heights = [0, 40, 80, 120, 160];
+                const heights = [160, 200, 240, 280, 320]; /* Solo en zona de césped verde */
                 const enemy = {
                     x: containerWidth,
                     y: heights[Math.floor(Math.random() * heights.length)],
@@ -2465,7 +2465,7 @@ Thank you for supporting indie game development! 🍄`;
 
             spawnCoin() {
                 const containerWidth = this.container.offsetWidth || 1200;
-                const heights = [0, 30, 60, 90, 120, 150];
+                const heights = [160, 180, 200, 220, 240, 260, 280, 300, 320]; /* Solo en zona de césped verde */
                 const coin = {
                     x: containerWidth,
                     y: heights[Math.floor(Math.random() * heights.length)],
@@ -3023,13 +3023,13 @@ Thank you for supporting indie game development! 🍄`;
                 this.score = 0;
                 this.time = 0;
                 this.player.x = 80;
-                this.player.y = 20; /* Césped verde, no tierra */
+                this.player.y = 200; /* Medio del césped verde */
                 
                 // Reset UI
                 this.scoreEl.textContent = '0';
                 this.timeEl.textContent = '0';
                 this.playerElement.style.left = '80px';
-                this.playerElement.style.bottom = '20px'; /* Césped verde zona */
+                this.playerElement.style.bottom = '200px'; /* Medio del césped verde */
                 this.jumpStatusEl.textContent = '🔄 Status: Waiting...';
                 
                 // Update leaderboard display
