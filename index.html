@@ -901,29 +901,118 @@
             }
         }
 
-        // Simple Online Leaderboard Manager
+        // Global Online Leaderboard Manager with JSONBin.io
         class OnlineLeaderboard {
             constructor() {
+                // JSONBin.io Configuration
+                this.binId = '671430b4ad19ca34f8b5e7be'; // Global leaderboard bin
+                this.apiKey = '$2a$10$AepQoRc6J8LVgcaTiTozJOQvyTvzk5s4htyp6aaObJe4JYLNE9vxq'; // API key
+                this.baseUrl = 'https://api.jsonbin.io/v3/b';
+                
                 this.isAvailable = true;
                 this.pollingInterval = null;
-                this.onlineScores = this.loadGlobalScores();
+                this.onlineScores = [];
+                
+                // Initialize leaderboard
+                this.initializeLeaderboard();
             }
 
-            // Load global scores from localStorage (shared across all players)
-            loadGlobalScores() {
-                const saved = localStorage.getItem('champirug_global_scores');
-                if (saved) {
-                    return JSON.parse(saved);
-                } else {
-                    // Initialize with some demo scores
-                    return [...MOCK_ONLINE_SCORES];
+            async initializeLeaderboard() {
+                try {
+                    console.log('🌐 Loading global leaderboard from JSONBin...');
+                    await this.loadGlobalScores();
+                    console.log('✅ Global leaderboard loaded successfully');
+                } catch (error) {
+                    console.warn('⚠️ Failed to load global leaderboard, using local cache:', error);
+                    this.loadLocalFallback();
                 }
             }
 
-            // Save global scores to localStorage
-            saveGlobalScores(scores) {
-                localStorage.setItem('champirug_global_scores', JSON.stringify(scores));
-                this.onlineScores = scores;
+            // Load global scores from JSONBin.io
+            async loadGlobalScores() {
+                try {
+                    const response = await fetch(`${this.baseUrl}/${this.binId}/latest`, {
+                        method: 'GET',
+                        headers: {
+                            'X-Master-Key': this.apiKey,
+                            'Content-Type': 'application/json'
+                        }
+                    });
+
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+
+                    const data = await response.json();
+                    this.onlineScores = data.record.scores || [];
+                    
+                    // Cache locally as backup
+                    localStorage.setItem('champirug_global_scores', JSON.stringify(this.onlineScores));
+                    
+                    console.log('📥 Loaded', this.onlineScores.length, 'global scores from JSONBin');
+                    return this.onlineScores;
+                } catch (error) {
+                    console.error('❌ Error loading global scores:', error);
+                    throw error;
+                }
+            }
+
+            // Fallback to local storage if JSONBin fails
+            loadLocalFallback() {
+                const saved = localStorage.getItem('champirug_global_scores');
+                if (saved) {
+                    try {
+                        this.onlineScores = JSON.parse(saved);
+                        console.log('📱 Loaded', this.onlineScores.length, 'scores from local cache');
+                    } catch (e) {
+                        console.warn('⚠️ Error parsing local cache, using demo scores');
+                        this.onlineScores = [...MOCK_ONLINE_SCORES];
+                    }
+                } else {
+                    console.log('📝 No local cache, using demo scores');
+                    this.onlineScores = [...MOCK_ONLINE_SCORES];
+                }
+            }
+
+            // Save global scores to JSONBin.io
+            async saveGlobalScores(scores) {
+                try {
+                    console.log('📤 Saving', scores.length, 'scores to JSONBin...');
+                    
+                    const payload = {
+                        scores: scores,
+                        lastUpdated: new Date().toISOString(),
+                        version: '1.0'
+                    };
+
+                    const response = await fetch(`${this.baseUrl}/${this.binId}`, {
+                        method: 'PUT',
+                        headers: {
+                            'X-Master-Key': this.apiKey,
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify(payload)
+                    });
+
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+
+                    const result = await response.json();
+                    this.onlineScores = scores;
+                    
+                    // Also save locally as backup
+                    localStorage.setItem('champirug_global_scores', JSON.stringify(scores));
+                    
+                    console.log('✅ Scores saved to global leaderboard successfully');
+                    return true;
+                } catch (error) {
+                    console.error('❌ Error saving to global leaderboard:', error);
+                    // Fallback to local save
+                    localStorage.setItem('champirug_global_scores', JSON.stringify(scores));
+                    this.onlineScores = scores;
+                    return false;
+                }
             }
 
             async saveScore(playerName, score) {
@@ -946,7 +1035,7 @@
                         .sort((a, b) => b.score - a.score)
                         .slice(0, 50);
                     
-                    this.saveGlobalScores(sortedScores);
+                    await this.saveGlobalScores(sortedScores);
                     
                     console.log('✅ Score saved successfully!', newScore);
                     return true;
@@ -960,7 +1049,10 @@
                 try {
                     console.log('📥 Fetching global scores...');
                     
-                    const scores = this.loadGlobalScores()
+                    // Reload fresh data from JSONBin
+                    await this.loadGlobalScores();
+                    
+                    const scores = this.onlineScores
                         .sort((a, b) => b.score - a.score)
                         .slice(0, limit);
                     
@@ -968,7 +1060,7 @@
                     return scores;
                 } catch (error) {
                     console.error('❌ Error fetching scores:', error);
-                    return [];
+                    return this.onlineScores.slice(0, limit) || [];
                 }
             }
 
@@ -998,14 +1090,30 @@
                 }
             }
 
-            // Reset leaderboard to default demo scores
-            resetLeaderboard() {
-                console.log('🗑️ Resetting leaderboard...');
-                localStorage.removeItem('champirug_global_scores');
-                this.onlineScores = [...MOCK_ONLINE_SCORES];
-                this.saveGlobalScores(this.onlineScores);
-                console.log('✅ Leaderboard reset to default scores');
-                return true;
+            // Reset global leaderboard completely
+            async resetLeaderboard() {
+                try {
+                    console.log('🗑️ Resetting global leaderboard...');
+                    
+                    // Reset to empty or demo scores
+                    const resetScores = []; // Completely empty, or [...MOCK_ONLINE_SCORES] for demo scores
+                    
+                    const success = await this.saveGlobalScores(resetScores);
+                    
+                    if (success) {
+                        console.log('✅ Global leaderboard reset successfully');
+                        localStorage.removeItem('champirug_global_scores'); // Clear local cache too
+                        return true;
+                    } else {
+                        throw new Error('Failed to save reset data');
+                    }
+                } catch (error) {
+                    console.error('❌ Error resetting global leaderboard:', error);
+                    // Fallback: at least reset local cache
+                    localStorage.removeItem('champirug_global_scores');
+                    this.onlineScores = [];
+                    return false;
+                }
             }
         }
 
@@ -2050,14 +2158,25 @@ Thank you for supporting indie game development! 🍄`;
             };
         }
 
-        // Function to reset leaderboard
-        function resetLeaderboard() {
-            if (confirm('¿Estás seguro de que quieres resetear el leaderboard? Esta acción no se puede deshacer.')) {
+        // Function to reset global leaderboard
+        async function resetLeaderboard() {
+            if (confirm('¿Estás seguro de que quieres resetear el leaderboard GLOBAL? Esta acción afectará a todos los jugadores y no se puede deshacer.')) {
                 if (window.game && window.game.onlineLeaderboard) {
-                    window.game.onlineLeaderboard.resetLeaderboard();
-                    // Update display immediately
-                    window.game.updateLeaderboardDisplay();
-                    alert('✅ Leaderboard reseteado exitosamente!');
+                    try {
+                        console.log('🔄 Initiating global leaderboard reset...');
+                        const success = await window.game.onlineLeaderboard.resetLeaderboard();
+                        
+                        if (success) {
+                            // Update display immediately
+                            window.game.updateLeaderboardDisplay();
+                            alert('✅ Leaderboard GLOBAL reseteado exitosamente!\n\nTodos los puntajes han sido eliminados del servidor.');
+                        } else {
+                            alert('⚠️ El reset se completó parcialmente.\n\nPuede que algunos datos locales se hayan limpiado, pero el servidor puede no haberse actualizado.');
+                        }
+                    } catch (error) {
+                        console.error('❌ Reset error:', error);
+                        alert('❌ Error durante el reset del leaderboard:\n\n' + error.message);
+                    }
                 } else {
                     alert('❌ Error: No se pudo acceder al sistema de leaderboard');
                 }
