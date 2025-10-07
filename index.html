@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Champirug - v5.1 Enhanced Wallet Selection</title>
+    <title>🍄 Champirug Game v5.15 - Mobile Support with Virtual D-Pad!</title>
     <link rel="icon" type="image/x-icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2280%22>🍄</text></svg>">
     <style>
         * {
@@ -337,6 +337,180 @@
         .player.jumping {
             animation: jump 0.3s ease-out;
         }
+
+        /* CONTROLES MÓVILES - CRUCETA VIRTUAL */
+        .mobile-controls {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: none;
+            z-index: 1000;
+        }
+
+        .dpad {
+            position: relative;
+            width: 120px;
+            height: 120px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 50%;
+            border: 2px solid rgba(255, 255, 255, 0.5);
+        }
+
+        .dpad-button {
+            position: absolute;
+            width: 40px;
+            height: 40px;
+            background: rgba(255, 255, 255, 0.8);
+            border: 2px solid #333;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+            font-weight: bold;
+            color: #333;
+            user-select: none;
+            touch-action: manipulation;
+            cursor: pointer;
+        }
+
+        .dpad-up {
+            top: 5px;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+
+        .dpad-down {
+            bottom: 5px;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+
+        .dpad-left {
+            left: 5px;
+            top: 50%;
+            transform: translateY(-50%);
+        }
+
+        .dpad-right {
+            right: 5px;
+            top: 50%;
+            transform: translateY(-50%);
+        }
+
+        .dpad-button:active {
+            background: rgba(255, 215, 0, 0.9);
+            transform: scale(0.95);
+        }
+
+        .dpad-up:active {
+            transform: translateX(-50%) scale(0.95);
+        }
+
+        .dpad-down:active {
+            transform: translateX(-50%) scale(0.95);
+        }
+
+        .dpad-left:active {
+            transform: translateY(-50%) scale(0.95);
+        }
+
+        .dpad-right:active {
+            transform: translateY(-50%) scale(0.95);
+        }
+
+        /* ADAPTACIONES MÓVILES */
+        @media (max-width: 768px) {
+            .mobile-controls {
+                display: block;
+            }
+
+            .desktop-controls {
+                display: none !important;
+            }
+
+            .mobile-controls-text {
+                display: block !important;
+            }
+
+            .instructions {
+                padding: 20px;
+                font-size: 16px;
+                max-width: 90vw;
+            }
+
+            .instructions h2 {
+                font-size: 24px;
+            }
+
+            .game-over {
+                padding: 20px;
+                font-size: 16px;
+                max-width: 90vw;
+            }
+
+            .game-over h1 {
+                font-size: 28px;
+            }
+
+            .ui-panel {
+                font-size: 16px;
+                padding: 10px;
+                right: 10px;
+                left: auto;
+            }
+
+            .leaderboard {
+                font-size: 12px;
+                padding: 10px;
+                max-width: 200px;
+            }
+
+            .wallet-modal-content {
+                width: 90%;
+                max-width: 400px;
+                padding: 20px;
+            }
+
+            .wallet-button {
+                padding: 15px;
+                font-size: 16px;
+            }
+
+            /* Ocultar debug panel en móviles */
+            #xverseDebugLog {
+                display: none !important;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .instructions {
+                padding: 15px;
+                font-size: 14px;
+            }
+
+            .game-over {
+                padding: 15px;
+                font-size: 14px;
+            }
+
+            .ui-panel {
+                font-size: 14px;
+                padding: 8px;
+            }
+
+            .dpad {
+                width: 100px;
+                height: 100px;
+            }
+
+            .dpad-button {
+                width: 35px;
+                height: 35px;
+                font-size: 14px;
+            }
+        }
         
         @keyframes jump {
             0% { transform: rotate(0deg) scale(1); }
@@ -398,11 +572,13 @@
             <h2>The Controllable Mushroom!</h2>
             <br>
             <p><strong>🎮 CONTROLS:</strong></p>
-            <p>⬆️ UP ARROW = Move Up</p>
-            <p>⬇️ DOWN ARROW = Move Down</p>
-            <p>⬅️ LEFT ARROW = Move Left</p>
-            <p>➡️ RIGHT ARROW = Move Right</p>
-            <p>SPACE = Start Game</p>
+            <p class="desktop-controls">⬆️ UP ARROW = Move Up</p>
+            <p class="desktop-controls">⬇️ DOWN ARROW = Move Down</p>
+            <p class="desktop-controls">⬅️ LEFT ARROW = Move Left</p>
+            <p class="desktop-controls">➡️ RIGHT ARROW = Move Right</p>
+            <p class="desktop-controls">SPACE = Start Game</p>
+            <p class="mobile-controls-text" style="display: none;">📱 Use the virtual D-pad below to move</p>
+            <p class="mobile-controls-text" style="display: none;">👆 Tap anywhere to start game</p>
             <br>
             <p><strong>🎯 OBJECTIVE:</strong></p>
             <p>🐻 Avoid the bears</p>
@@ -416,7 +592,8 @@
             <p><strong>💜 SUPPORT DEVELOPMENT:</strong></p>
             <p>💜 Click <span style="color:#9370DB;">Donate</span> button (you will receive nothing)</p>
             <br>
-            <p><strong style="color: #FFD700;">Press SPACE to start!</strong></p>
+            <p class="desktop-controls"><strong style="color: #FFD700;">Press SPACE to start!</strong></p>
+            <p class="mobile-controls-text" style="display: none;"><strong style="color: #FFD700;">Tap to start!</strong></p>
         </div>
 
         <!-- Game Over -->
@@ -433,27 +610,33 @@
             <p style="font-size: 14px; opacity: 0.8;">You can also press SPACE</p>
         </div>
 
-        <!-- Xverse Debug Log -->
+        <!-- Xverse Debug Log - HIDDEN -->
         <div id="xverseDebugLog" style="
             position: fixed;
             top: 10px;
             right: 10px;
-            width: 400px;
+            width: 450px;
             max-height: 600px;
-            background: rgba(0, 0, 0, 0.9);
+            background: rgba(0, 0, 0, 0.95);
             color: #00FF00;
             font-family: 'Courier New', monospace;
-            font-size: 12px;
-            padding: 10px;
-            border-radius: 8px;
-            border: 2px solid #00FF00;
+            font-size: 11px;
+            padding: 15px;
+            border-radius: 10px;
+            border: 3px solid #00FF00;
             overflow-y: auto;
-            z-index: 10000;
+            z-index: 99999999;
             display: none;
+            box-shadow: 0 0 20px rgba(0, 255, 0, 0.3);
+            user-select: text;
+            cursor: default;
         ">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
-                <h3 style="margin: 0; color: #00FF00;">🔍 XVERSE DEBUG LOG</h3>
-                <button onclick="clearXverseLog()" style="background: #ff0000; color: white; border: none; padding: 2px 6px; border-radius: 3px; cursor: pointer;">Clear</button>
+                <h3 style="margin: 0; color: #00FF00;">🔍 XVERSE DEBUG LOG (F12=toggle)</h3>
+                <div>
+                    <button onclick="xverseLogger.toggleVisibility()" style="background: #0066ff; color: white; border: none; padding: 2px 6px; border-radius: 3px; cursor: pointer; margin-right: 5px;">Hide</button>
+                    <button onclick="clearXverseLog()" style="background: #ff0000; color: white; border: none; padding: 2px 6px; border-radius: 3px; cursor: pointer;">Clear</button>
+                </div>
             </div>
             <div id="xverseLogContent"></div>
         </div>
@@ -468,7 +651,7 @@
         class XverseDebugLogger {
             constructor() {
                 this.logs = [];
-                this.isVisible = false;
+                this.isVisible = false; // Start hidden
                 this.init();
             }
 
@@ -607,7 +790,13 @@
                 const logElement = document.getElementById('xverseDebugLog');
                 if (logElement) {
                     logElement.style.display = 'block';
+                    logElement.style.zIndex = '99999999';
+                    logElement.style.position = 'fixed';
                     this.isVisible = true;
+                    
+                    // Force focus and bring to front
+                    logElement.focus();
+                    logElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
                 }
             }
 
@@ -834,46 +1023,74 @@
                     
                     // Method 2: Try XverseProviders.BitcoinProvider (legacy but reliable)
                     if (window.XverseProviders?.BitcoinProvider) {
-                        console.log('📢 Using XverseProviders.BitcoinProvider.connect() API...');
+                        console.log('📢 Using XverseProviders.BitcoinProvider.request(getAccounts) API...');
                         
-                        // Xverse connect() expects specific parameters
-                        const connectOptions = {
-                            purposes: ['payment', 'ordinals'],
-                            message: '🍄 Champirug Game wants to connect to your Bitcoin wallet for leaderboard authentication!',
-                            appDetails: {
-                                name: 'Champirug Game',
-                                url: window.location.origin
-                            }
+                        // Use the CORRECT official method: request('getAccounts', {...})
+                        const requestOptions = {
+                            purposes: ['Payment', 'Ordinals'],
+                            message: '🍄 Champirug Game wants to connect to your Bitcoin wallet!'
                         };
                         
-                        console.log('📤 Sending connect request with options:', connectOptions);
-                        const response = await window.XverseProviders.BitcoinProvider.connect(connectOptions);
-                        console.log('📋 XverseProviders.connect() response:', response);
+                        console.log('📤 Sending getAccounts request with options:', requestOptions);
+                        const response = await window.XverseProviders.BitcoinProvider.request('getAccounts', requestOptions);
+                        console.log('📋 XverseProviders getAccounts response:', response);
+                        console.log('📋 Response type:', typeof response);
+                        console.log('📋 Response keys:', response ? Object.keys(response) : 'null/undefined');
+                        console.log('📋 Response.result:', response?.result);
+                        console.log('📋 Response.addresses:', response?.addresses);
                         
-                        if (response && (response.addresses || response.result)) {
-                            const addresses = response.addresses || response.result?.addresses || response.result;
+                        // Process getAccounts response - try multiple possible formats
+                        let addresses = null;
+                        
+                        if (response?.result?.addresses && Array.isArray(response.result.addresses)) {
+                            addresses = response.result.addresses;
+                            console.log('📮 Using response.result.addresses format:', addresses);
+                        } else if (response?.addresses && Array.isArray(response.addresses)) {
+                            addresses = response.addresses;
+                            console.log('📮 Using response.addresses format:', addresses);
+                        } else if (Array.isArray(response)) {
+                            addresses = response;
+                            console.log('📮 Using direct array format:', addresses);
+                        } else if (response?.result && Array.isArray(response.result)) {
+                            addresses = response.result;
+                            console.log('📮 Using response.result array format:', addresses);
+                        }
+                        
+                        if (addresses && addresses.length > 0) {
+                            console.log('📮 Processing addresses:', addresses);
                             
-                            if (Array.isArray(addresses) && addresses.length > 0) {
-                                const paymentAddr = addresses.find(addr => 
-                                    addr.purpose === 'payment' || addr.type === 'payment'
-                                );
-                                const selectedAddr = paymentAddr || addresses[0];
-                                const address = selectedAddr.address || selectedAddr;
+                            // Find payment address with flexible matching
+                            const paymentAddr = addresses.find(addr => 
+                                (addr.purpose && (addr.purpose.toLowerCase() === 'payment' || addr.purpose === 'Payment')) ||
+                                (addr.type && addr.type.toLowerCase().includes('payment')) ||
+                                (addr.addressType && addr.addressType.toLowerCase().includes('payment'))
+                            );
+                            
+                            const selectedAddr = paymentAddr || addresses[0];
+                            let address = selectedAddr?.address || selectedAddr;
+                            
+                            // Handle case where address might be nested or just a string
+                            if (typeof address === 'object' && address.address) {
+                                address = address.address;
+                            }
+                            
+                            if (typeof address === 'string' && address.length > 0) {
+                                this.address = address;
+                                this.connectedWallet = 'xverse';
+                                this.signature = 'xverse_connected_' + Date.now();
                                 
-                                if (address) {
-                                    this.address = address;
-                                    this.connectedWallet = 'xverse';
-                                    this.signature = 'xverse_connected_' + Date.now();
-                                    
-                                    console.log('✅ Xverse connected via XverseProviders:', this.address);
-                                    return {
-                                        address: this.address,
-                                        wallet: 'Xverse',
-                                        signature: this.signature
-                                    };
-                                }
+                                console.log('✅ Xverse connected successfully with getAccounts:', this.address);
+                                console.log('🔗 Selected address details:', selectedAddr);
+                                return {
+                                    address: this.address,
+                                    wallet: 'Xverse',
+                                    signature: this.signature
+                                };
                             }
                         }
+                        
+                        console.error('❌ Could not extract valid address from getAccounts response:', response);
+                        throw new Error('No valid Bitcoin address found in Xverse getAccounts response');
                     }
                     
                     // Method 3: Try other Xverse injection methods
@@ -1373,6 +1590,10 @@
                 this.container = document.getElementById('gameContainer');
                 this.playerElement = document.getElementById('player');
                 
+                // Mobile Detection
+                this.isMobile = this.detectMobile();
+                this.mobileControls = document.getElementById('mobileControls');
+                
                 // Dynamic sizing system
                 this.updateDynamicSizes();
                 
@@ -1454,6 +1675,9 @@
             }
 
             init() {
+                // Configurar controles móviles
+                this.setupMobileControls();
+                
                 // Controles de teclado mejorados
                 document.addEventListener('keydown', (e) => {
                     console.log('🎹 Tecla presionada:', e.key, e.code);
@@ -2319,6 +2543,127 @@ Thank you for supporting indie game development! 🍄`;
                 this.updateLeaderboardDisplay();
             }
 
+            // Métodos para móviles
+            detectMobile() {
+                const userAgent = navigator.userAgent || navigator.vendor || window.opera;
+                const isMobileDevice = /android|webos|iphone|ipad|ipod|blackberry|iemobile|opera mini/i.test(userAgent);
+                const isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+                const isSmallScreen = window.innerWidth <= 768;
+                
+                console.log('📱 Mobile detection:', {
+                    userAgent: isMobileDevice,
+                    touch: isTouchDevice,
+                    smallScreen: isSmallScreen,
+                    final: isMobileDevice || (isTouchDevice && isSmallScreen)
+                });
+                
+                return isMobileDevice || (isTouchDevice && isSmallScreen);
+            }
+
+            setupMobileControls() {
+                if (!this.isMobile) {
+                    console.log('💻 Desktop mode - mobile controls disabled');
+                    return;
+                }
+
+                console.log('📱 Mobile mode - setting up touch controls');
+                
+                // Mostrar controles móviles
+                if (this.mobileControls) {
+                    this.mobileControls.style.display = 'block';
+                }
+
+                // Actualizar instrucciones para móviles
+                const desktopControls = document.querySelectorAll('.desktop-controls');
+                const mobileControlsText = document.querySelectorAll('.mobile-controls-text');
+                
+                desktopControls.forEach(el => el.style.display = 'none');
+                mobileControlsText.forEach(el => el.style.display = 'block');
+
+                // Configurar eventos táctiles para la cruceta
+                const dpadButtons = {
+                    up: document.getElementById('dpadUp'),
+                    down: document.getElementById('dpadDown'),
+                    left: document.getElementById('dpadLeft'),
+                    right: document.getElementById('dpadRight')
+                };
+
+                // Configurar cada botón de la cruceta
+                Object.entries(dpadButtons).forEach(([direction, button]) => {
+                    if (!button) return;
+
+                    // Touch start
+                    button.addEventListener('touchstart', (e) => {
+                        e.preventDefault();
+                        console.log(`📱 Touch start: ${direction}`);
+                        this.handleMobileInput(direction, true);
+                    }, { passive: false });
+
+                    // Touch end
+                    button.addEventListener('touchend', (e) => {
+                        e.preventDefault();
+                        console.log(`📱 Touch end: ${direction}`);
+                        this.handleMobileInput(direction, false);
+                    }, { passive: false });
+
+                    // Mouse events como fallback
+                    button.addEventListener('mousedown', (e) => {
+                        e.preventDefault();
+                        this.handleMobileInput(direction, true);
+                    });
+
+                    button.addEventListener('mouseup', (e) => {
+                        e.preventDefault();
+                        this.handleMobileInput(direction, false);
+                    });
+                });
+
+                // Tap en el área del juego para iniciar
+                this.container.addEventListener('touchstart', (e) => {
+                    // Solo si no está tocando los controles
+                    if (!e.target.closest('.mobile-controls')) {
+                        if (!this.isRunning) {
+                            e.preventDefault();
+                            this.handleStart();
+                        }
+                    }
+                }, { passive: false });
+
+                // Actualizar controles en cambio de orientación
+                window.addEventListener('orientationchange', () => {
+                    setTimeout(() => {
+                        this.updateDynamicSizes();
+                    }, 100);
+                });
+            }
+
+            handleMobileInput(direction, isPressed) {
+                if (!this.isRunning) {
+                    if (isPressed) {
+                        this.handleStart();
+                    }
+                    return;
+                }
+
+                // Ejecutar movimiento
+                if (isPressed) {
+                    switch (direction) {
+                        case 'up':
+                            this.moveUp();
+                            break;
+                        case 'down':
+                            this.moveDown();
+                            break;
+                        case 'left':
+                            this.moveLeft();
+                            break;
+                        case 'right':
+                            this.moveRight();
+                            break;
+                    }
+                }
+            }
+
             showLeaderboard() {
                 alert('🏆 TOP 10 BEST SCORES:\n\n' + 
                     this.leaderboard.slice(0, 10).map((entry, index) => 
@@ -2568,6 +2913,16 @@ Thank you for supporting indie game development! 🍄`;
             <div id="walletButtonsContainer">
                 <!-- Wallet buttons will be inserted here -->
             </div>
+        </div>
+    </div>
+
+    <!-- Controles Móviles - Cruceta Virtual -->
+    <div id="mobileControls" class="mobile-controls">
+        <div class="dpad">
+            <div class="dpad-button dpad-up" id="dpadUp">↑</div>
+            <div class="dpad-button dpad-down" id="dpadDown">↓</div>
+            <div class="dpad-button dpad-left" id="dpadLeft">←</div>
+            <div class="dpad-button dpad-right" id="dpadRight">→</div>
         </div>
     </div>
 </body>
