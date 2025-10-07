@@ -434,8 +434,7 @@
         </div>
     </div>
 
-    <!-- Sats Connect for Xverse wallet integration -->
-    <script src="https://unpkg.com/sats-connect@4.1.1/dist/index.js"></script>
+    <!-- Xverse wallet integration using native browser APIs -->
 
     <script>
         console.log('🍄 CHAMPIRUG LOADING...');
@@ -462,37 +461,32 @@
                     });
                 }
                 
-                // Check for Xverse using sats-connect (modern method)
+                // Check for Xverse using multiple detection methods
                 let xverseAvailable = false;
+                let xverseProvider = null;
                 
-                // Primary method: Check for sats-connect library
-                if (window.satsConnect) {
-                    console.log('🟣 Found Xverse via sats-connect library (recommended)');
-                    xverseAvailable = true;
-                }
-                // Fallback methods for legacy support
-                else {
-                    const fallbackMethods = [
-                        { prop: 'XverseProviders.BitcoinProvider', provider: window.XverseProviders?.BitcoinProvider },
-                        { prop: 'BitcoinProvider', provider: window.BitcoinProvider },
-                        { prop: 'xverse', provider: window.xverse },
-                        { prop: 'Xverse.bitcoin', provider: window.Xverse?.bitcoin },
-                        { prop: 'sats', provider: window.sats }
-                    ];
-                    
-                    for (const method of fallbackMethods) {
-                        if (method.provider) {
-                            console.log(`🟣 Found Xverse via ${method.prop} (legacy fallback)`);
-                            xverseAvailable = true;
-                            break;
-                        }
+                // Detection methods in order of preference
+                const xverseDetectionMethods = [
+                    { name: 'satsConnect', provider: window.satsConnect, preferred: true },
+                    { name: 'XverseProviders.BitcoinProvider', provider: window.XverseProviders?.BitcoinProvider, preferred: true },
+                    { name: 'BitcoinProvider', provider: window.BitcoinProvider, preferred: false },
+                    { name: 'xverse', provider: window.xverse, preferred: false },
+                    { name: 'sats', provider: window.sats, preferred: false }
+                ];
+                
+                for (const method of xverseDetectionMethods) {
+                    if (method.provider) {
+                        console.log(`🟣 Found Xverse via ${method.name} ${method.preferred ? '(recommended)' : '(fallback)'}`);
+                        xverseAvailable = true;
+                        xverseProvider = method.provider;
+                        break;
                     }
                 }
                 
                 if (xverseAvailable) {
                     wallets.push({ 
                         name: 'Xverse', 
-                        provider: window.satsConnect || window.XverseProviders?.BitcoinProvider, 
+                        provider: xverseProvider, 
                         type: 'xverse',
                         logo: '🟣' // Purple circle for Xverse
                     });
@@ -500,10 +494,11 @@
                 } else {
                     console.log('🔍 Xverse not detected. Extension may not be installed.');
                     
-                    // Check if Xverse might be loading
+                    // Check if Xverse might be loading (common with extensions)
                     setTimeout(() => {
-                        if (window.satsConnect || window.XverseProviders?.BitcoinProvider) {
-                            console.log('⏰ Xverse detected after delay - consider refreshing');
+                        const delayedCheck = window.satsConnect || window.XverseProviders?.BitcoinProvider || window.BitcoinProvider;
+                        if (delayedCheck) {
+                            console.log('⏰ Xverse detected after delay - refresh recommended');
                         }
                     }, 2000);
                 }
@@ -578,71 +573,133 @@
                 }
             }
 
-            // Connect to Xverse wallet using modern sats-connect API
+            // Connect to Xverse wallet using native browser APIs
             async connectXverse(xverse) {
                 try {
-                    console.log('🔗 Connecting to Xverse wallet using sats-connect...');
+                    console.log('🔗 Connecting to Xverse wallet...');
                     
-                    // Check if sats-connect is available
-                    if (!window.satsConnect) {
-                        throw new Error('Sats Connect library not loaded. Please refresh the page.');
-                    }
-                    
-                    console.log('📢 Requesting wallet connection from Xverse...');
-                    
-                    // Use the modern sats-connect API with wallet_connect
-                    const response = await window.satsConnect.request('wallet_connect', {
-                        addresses: [window.satsConnect.AddressPurpose.Payment],
-                        message: '🍄 Champirug Game wants to connect to your Bitcoin wallet for leaderboard authentication!'
-                    });
-                    
-                    console.log('📋 Xverse connection response:', response);
-                    
-                    if (response.status !== 'success') {
-                        if (response.error?.code === window.satsConnect.RpcErrorCode.USER_REJECTION) {
-                            throw new Error('Connection cancelled by user. Please approve the connection to play with wallet authentication.');
-                        } else {
-                            throw new Error(`Connection failed: ${response.error?.message || 'Unknown error'}`);
+                    // Method 1: Try modern window.satsConnect (injected by Xverse extension)
+                    if (window.satsConnect && typeof window.satsConnect.request === 'function') {
+                        console.log('📢 Using window.satsConnect API...');
+                        
+                        const response = await window.satsConnect.request('wallet_connect', {
+                            addresses: ['payment'],
+                            message: '🍄 Champirug Game wants to connect to your Bitcoin wallet!'
+                        });
+                        
+                        console.log('� Sats Connect response:', response);
+                        
+                        if (response.status === 'success' && response.result?.addresses) {
+                            const paymentAddr = response.result.addresses.find(addr => addr.purpose === 'payment');
+                            if (paymentAddr) {
+                                this.address = paymentAddr.address;
+                                this.connectedWallet = 'xverse';
+                                this.signature = 'xverse_connected_' + Date.now();
+                                
+                                console.log('✅ Xverse connected via satsConnect:', this.address);
+                                return {
+                                    address: this.address,
+                                    wallet: 'Xverse',
+                                    signature: this.signature
+                                };
+                            }
                         }
                     }
                     
-                    // Extract the payment address from the response
-                    const addresses = response.result?.addresses;
-                    if (!addresses || addresses.length === 0) {
-                        throw new Error('No addresses returned from Xverse wallet');
+                    // Method 2: Try XverseProviders.BitcoinProvider (legacy but reliable)
+                    if (window.XverseProviders?.BitcoinProvider) {
+                        console.log('📢 Using XverseProviders.BitcoinProvider API...');
+                        
+                        const response = await window.XverseProviders.BitcoinProvider.request('getAddresses');
+                        console.log('📋 XverseProviders response:', response);
+                        
+                        if (response && (response.addresses || response.result)) {
+                            const addresses = response.addresses || response.result?.addresses || response.result;
+                            
+                            if (Array.isArray(addresses) && addresses.length > 0) {
+                                const paymentAddr = addresses.find(addr => 
+                                    addr.purpose === 'payment' || addr.type === 'payment'
+                                );
+                                const selectedAddr = paymentAddr || addresses[0];
+                                const address = selectedAddr.address || selectedAddr;
+                                
+                                if (address) {
+                                    this.address = address;
+                                    this.connectedWallet = 'xverse';
+                                    this.signature = 'xverse_connected_' + Date.now();
+                                    
+                                    console.log('✅ Xverse connected via XverseProviders:', this.address);
+                                    return {
+                                        address: this.address,
+                                        wallet: 'Xverse',
+                                        signature: this.signature
+                                    };
+                                }
+                            }
+                        }
                     }
                     
-                    const paymentAddress = addresses.find(addr => addr.purpose === 'payment');
-                    if (!paymentAddress) {
-                        throw new Error('No payment address found in wallet');
+                    // Method 3: Try other Xverse injection methods
+                    const alternativeMethods = [
+                        { name: 'BitcoinProvider', provider: window.BitcoinProvider },
+                        { name: 'xverse', provider: window.xverse },
+                        { name: 'sats', provider: window.sats }
+                    ];
+                    
+                    for (const method of alternativeMethods) {
+                        if (method.provider && typeof method.provider.request === 'function') {
+                            console.log(`📢 Trying ${method.name} API...`);
+                            
+                            try {
+                                const response = await method.provider.request('getAddresses');
+                                console.log(`📋 ${method.name} response:`, response);
+                                
+                                if (response && (response.addresses || response.result)) {
+                                    const addresses = response.addresses || response.result?.addresses || response.result;
+                                    
+                                    if (Array.isArray(addresses) && addresses.length > 0) {
+                                        const paymentAddr = addresses.find(addr => 
+                                            addr.purpose === 'payment' || addr.type === 'payment'
+                                        );
+                                        const selectedAddr = paymentAddr || addresses[0];
+                                        const address = selectedAddr.address || selectedAddr;
+                                        
+                                        if (address) {
+                                            this.address = address;
+                                            this.connectedWallet = 'xverse';
+                                            this.signature = 'xverse_connected_' + Date.now();
+                                            
+                                            console.log(`✅ Xverse connected via ${method.name}:`, this.address);
+                                            return {
+                                                address: this.address,
+                                                wallet: 'Xverse',
+                                                signature: this.signature
+                                            };
+                                        }
+                                    }
+                                }
+                            } catch (methodError) {
+                                console.log(`⚠️ ${method.name} failed:`, methodError.message);
+                                continue;
+                            }
+                        }
                     }
                     
-                    this.address = paymentAddress.address;
-                    this.connectedWallet = 'xverse';
-                    this.signature = 'xverse_connected_' + Date.now();
-                    
-                    console.log('✅ Xverse wallet connected successfully:', this.address);
-                    
-                    return {
-                        address: this.address,
-                        wallet: 'Xverse',
-                        signature: this.signature
-                    };
+                    throw new Error('No functional Xverse API found. Make sure Xverse extension is installed and unlocked.');
                     
                 } catch (error) {
                     console.error('❌ Xverse connection failed:', error);
                     
-                    // Provide helpful error messages
                     let errorMessage = 'Xverse connection failed.\n\n';
                     
-                    if (error.message.includes('cancelled') || error.message.includes('rejected')) {
-                        errorMessage += '❌ Connection was cancelled.\n\nPlease click "Connect Wallet" again and approve the connection in your Xverse wallet popup.';
-                    } else if (error.message.includes('not loaded') || error.message.includes('satsConnect')) {
-                        errorMessage += '🔧 Sats Connect library failed to load.\n\nPlease:\n• Refresh the page and try again\n• Make sure you have a stable internet connection';
-                    } else if (error.message.includes('addresses') || error.message.includes('payment')) {
-                        errorMessage += '🔧 Could not get wallet addresses.\n\nMake sure:\n• Your Xverse wallet is unlocked\n• You have Bitcoin addresses in your wallet\n• Try restarting the Xverse extension';
+                    if (error.message.includes('User denied') || error.message.includes('rejected') || error.message.includes('cancelled')) {
+                        errorMessage += '❌ Connection was rejected.\n\nPlease approve the connection in your Xverse wallet.';
+                    } else if (error.message.includes('No functional') || error.message.includes('not found')) {
+                        errorMessage += '🔧 Xverse extension not detected.\n\nMake sure:\n• Xverse extension is installed\n• Xverse wallet is unlocked\n• Refresh the page and try again';
+                    } else if (error.message.includes('addresses')) {
+                        errorMessage += '🔧 Could not get wallet addresses.\n\nMake sure:\n• Your Xverse wallet is unlocked\n• You have Bitcoin addresses in your wallet';
                     } else {
-                        errorMessage += `Error: ${error.message}\n\nIf the problem persists:\n• Make sure Xverse extension is installed and updated\n• Try refreshing the page\n• Check that popups are allowed for this site`;
+                        errorMessage += `Error: ${error.message}\n\nTroubleshooting:\n• Make sure Xverse extension is installed and updated\n• Unlock your Xverse wallet\n• Refresh the page and try again`;
                     }
                     
                     throw new Error(errorMessage);
