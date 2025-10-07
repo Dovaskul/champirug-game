@@ -836,7 +836,18 @@
                     if (window.XverseProviders?.BitcoinProvider) {
                         console.log('📢 Using XverseProviders.BitcoinProvider.connect() API...');
                         
-                        const response = await window.XverseProviders.BitcoinProvider.connect();
+                        // Xverse connect() expects specific parameters
+                        const connectOptions = {
+                            purposes: ['payment', 'ordinals'],
+                            message: '🍄 Champirug Game wants to connect to your Bitcoin wallet for leaderboard authentication!',
+                            appDetails: {
+                                name: 'Champirug Game',
+                                url: window.location.origin
+                            }
+                        };
+                        
+                        console.log('📤 Sending connect request with options:', connectOptions);
+                        const response = await window.XverseProviders.BitcoinProvider.connect(connectOptions);
                         console.log('📋 XverseProviders.connect() response:', response);
                         
                         if (response && (response.addresses || response.result)) {
@@ -878,9 +889,20 @@
                             
                             try {
                                 // Try connect method first, fallback to request
-                                const response = method.provider.connect ? 
-                                    await method.provider.connect() : 
-                                    await method.provider.request('getAddresses');
+                                let response;
+                                if (method.provider.connect) {
+                                    const connectOptions = {
+                                        purposes: ['payment', 'ordinals'],
+                                        message: '🍄 Champirug Game wants to connect!',
+                                        appDetails: {
+                                            name: 'Champirug Game',
+                                            url: window.location.origin
+                                        }
+                                    };
+                                    response = await method.provider.connect(connectOptions);
+                                } else {
+                                    response = await method.provider.request('getAddresses');
+                                }
                                 console.log(`📋 ${method.name} response:`, response);
                                 
                                 if (response && (response.addresses || response.result)) {
