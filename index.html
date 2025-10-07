@@ -497,16 +497,11 @@
             #gameContainer {
                 height: calc(100vh - 180px); /* Más espacio para D-pad más grande */
                 margin-bottom: 180px; /* Espacio para los controles */
-                /* Ajustar gradiente para más zona verde en móvil */
-                background: linear-gradient(to bottom, #87CEEB 60%, #32CD32 60%);
+                /* Más franja azul bajo el verde - subir la zona verde */
+                background: linear-gradient(to bottom, #87CEEB 75%, #32CD32 75%);
             }
 
-            /* Ajustar posición del champiñón para zona verde - MÁXIMA ESPECIFICIDAD */
-            #gameContainer .player[id="player"] {
-                bottom: 10px !important; /* Posición fija en suelo verde - forzar sobre JavaScript */
-                left: min(60px, 12vw) !important;
-                position: absolute !important;
-            }
+            /* Champiñón puede moverse normalmente en móvil - sin restricciones */
 
             .mobile-controls {
                 display: block;
@@ -766,12 +761,7 @@
                 padding: 8px;
             }
 
-            /* CHAMPIÑÓN POSICIÓN FIJA EN MÓVIL - SOBREPONER JAVASCRIPT */
-            #gameContainer #player.player {
-                bottom: 10px !important;
-                left: min(60px, 12vw) !important;
-                position: absolute !important;
-            }
+            /* Champiñón móvil - sin restricciones de posición para permitir movimiento */
 
             /* D-PAD GRANDE FORZADO PARA MÓVIL */
             .dpad {
