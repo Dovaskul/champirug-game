@@ -860,7 +860,9 @@
 
         <!-- Leaderboard -->
         <div id="leaderboard" class="leaderboard">
-            <h3>🏆 TOP 5 <span id="onlineIndicator" style="font-size: 0.8em; color: #90EE90;">🌐</span></h3>
+            <h3>🏆 TOP 5 <span id="onlineIndicator" style="font-size: 0.8em; color: #90EE90;">🌐</span>
+                <button onclick="game.forceRefreshLeaderboard()" style="background:#4CAF50;border:none;padding:2px 6px;border-radius:3px;cursor:pointer;font-size:10px;margin-left:5px;" title="Refresh leaderboard">🔄</button>
+            </h3>
             <div id="leaderboardList">
                 <!-- Filled dynamically -->
             </div>
@@ -2128,14 +2130,14 @@
                     // Check for available wallets and update UI
                     this.checkAvailableWallets();
                     
-                    // Start polling for real-time updates every 30 seconds
+                    // Start more frequent polling for real-time updates every 15 seconds
                     this.onlineLeaderboard.startPolling((onlineScores) => {
                         if (onlineScores.length > 0) {
                             this.leaderboard = onlineScores;
                             this.updateLeaderboardDisplay();
-                            console.log('🔄 Real-time update:', onlineScores.length, 'scores');
+                            console.log('🔄 Real-time update:', onlineScores.length, 'scores - Top:', onlineScores[0]?.score);
                         }
-                    }, 30000);
+                    }, 15000); // Reduced from 30s to 15s for faster updates
                 }, 2000);
                 
                 // Listen for window resize to update dynamic sizes
@@ -2149,41 +2151,47 @@
                 console.log('🎯 Controls configured. Use ARROW KEYS to move!');
             }
 
-            // Update leaderboard with online scores
+            // Update leaderboard with online scores - FIXED VERSION
             async updateOnlineLeaderboard() {
-                if (!this.firebaseLeaderboard || !this.firebaseLeaderboard.isAvailable) {
-                    console.log('� Using local leaderboard only');
+                if (!this.onlineLeaderboard || !this.onlineLeaderboard.isAvailable) {
+                    console.log('📱 Using local leaderboard only');
                     return;
                 }
                 
                 try {
-                    console.log('🌐 Fetching online scores...');
-                    const onlineScores = await this.firebaseLeaderboard.getTopScores(10);
+                    console.log('🌐 Fetching fresh online scores...');
+                    
+                    // Force fresh fetch from JSONBin
+                    const onlineScores = await this.onlineLeaderboard.getTopScores(10);
                     console.log('📊 Online scores received:', onlineScores.length);
                     
                     if (onlineScores.length > 0) {
-                        // Merge online and local scores
-                        const allScores = [...this.leaderboard, ...onlineScores];
-                        
-                        // Remove duplicates based on score and timestamp
-                        const uniqueScores = allScores.filter((score, index, arr) => 
-                            arr.findIndex(s => 
-                                s.score === score.score && 
-                                (s.timestamp === score.timestamp || s.time === score.time)
-                            ) === index
-                        );
-                        
-                        this.leaderboard = uniqueScores
+                        // Use ONLY online scores for global leaderboard - no mixing with local
+                        this.leaderboard = onlineScores
                             .sort((a, b) => b.score - a.score)
                             .slice(0, 10);
                         
                         this.updateLeaderboardDisplay();
-                        console.log('✅ Leaderboard updated with', onlineScores.length, 'online scores');
+                        console.log('✅ Global leaderboard updated with', onlineScores.length, 'online scores');
+                        console.log('🏆 Current top score:', onlineScores[0]?.score || 'No scores');
                     } else {
-                        console.log('📱 No online scores, using local leaderboard');
+                        console.log('📱 No online scores found, keeping local leaderboard');
                     }
                 } catch (error) {
-                    console.warn('⚠️ Failed to update online leaderboard:', error);
+                    console.error('❌ Failed to update online leaderboard:', error);
+                    
+                    // Try to reload from cache as fallback
+                    const cached = localStorage.getItem('champirug_global_scores');
+                    if (cached) {
+                        try {
+                            const cachedScores = JSON.parse(cached);
+                            this.leaderboard = cachedScores.sort((a, b) => b.score - a.score).slice(0, 10);
+                            this.updateLeaderboardDisplay();
+                            console.log('🔄 Loaded from cache:', cachedScores.length, 'scores');
+                        } catch (e) {
+                            console.warn('⚠️ Cache parsing failed');
+                        }
+                    }
                 }
             }
 
@@ -2984,6 +2992,58 @@ Thank you for supporting indie game development! 🍄`;
                     this.leaderboard.slice(0, 10).map((entry, index) => 
                         `#${index + 1}: ${entry.score} pts (${entry.date})`
                     ).join('\n') || 'No scores recorded yet');
+            }
+
+            // Force refresh leaderboard from server
+            async forceRefreshLeaderboard() {
+                try {
+                    console.log('🔄 Manual leaderboard refresh requested...');
+                    
+                    // Show visual feedback
+                    const indicator = document.getElementById('onlineIndicator');
+                    const originalText = indicator.textContent;
+                    indicator.textContent = '⏳';
+                    indicator.style.color = '#FFA500';
+                    
+                    // Force fresh data from JSONBin
+                    await this.onlineLeaderboard.loadGlobalScores();
+                    const freshScores = await this.onlineLeaderboard.getTopScores(10);
+                    
+                    if (freshScores.length > 0) {
+                        this.leaderboard = freshScores.sort((a, b) => b.score - a.score).slice(0, 10);
+                        this.updateLeaderboardDisplay();
+                        
+                        // Success feedback
+                        indicator.textContent = '✅';
+                        indicator.style.color = '#90EE90';
+                        setTimeout(() => {
+                            indicator.textContent = originalText;
+                            indicator.style.color = '#90EE90';
+                        }, 2000);
+                        
+                        console.log('✅ Leaderboard refreshed successfully! Top score:', freshScores[0]?.score);
+                        
+                        // Show brief success message
+                        const topScore = freshScores[0]?.score || 0;
+                        alert(`🔄 Leaderboard refreshed!\n\n🏆 Current top score: ${topScore} points\n\n${freshScores.length} scores loaded.`);
+                    } else {
+                        throw new Error('No scores received');
+                    }
+                    
+                } catch (error) {
+                    console.error('❌ Failed to refresh leaderboard:', error);
+                    
+                    // Error feedback
+                    const indicator = document.getElementById('onlineIndicator');
+                    indicator.textContent = '❌';
+                    indicator.style.color = '#FF6B6B';
+                    setTimeout(() => {
+                        indicator.textContent = '🌐';
+                        indicator.style.color = '#90EE90';
+                    }, 3000);
+                    
+                    alert('❌ Failed to refresh leaderboard.\n\nPlease check your internet connection and try again.');
+                }
             }
         }
 
