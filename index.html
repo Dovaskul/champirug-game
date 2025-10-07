@@ -495,13 +495,15 @@
         /* ADAPTACIONES MÓVILES */
         @media (max-width: 768px) {
             #gameContainer {
-                height: calc(100vh - 160px); /* Dejar espacio para el D-pad */
-                margin-bottom: 160px; /* Espacio para los controles */
+                height: calc(100vh - 180px); /* Más espacio para D-pad más grande */
+                margin-bottom: 180px; /* Espacio para los controles */
+                /* Ajustar gradiente para más zona verde en móvil */
+                background: linear-gradient(to bottom, #87CEEB 60%, #32CD32 60%);
             }
 
-            /* Ajustar posición del champiñón para compensar altura reducida */
+            /* Ajustar posición del champiñón para zona verde */
             .player {
-                bottom: 20%; /* Posicionar claramente en zona verde */
+                bottom: 10px; /* Posición fija en suelo verde */
                 left: min(60px, 12vw);
             }
 
@@ -512,28 +514,31 @@
                 right: 0;
                 transform: none;
                 width: 100%;
-                height: 140px; /* Aumentado para el D-pad más grande */
-                padding: 0 10px;
+                height: 160px; /* Aumentado para botones más grandes */
+                padding: 0 5px; /* Menos padding para aprovechar el ancho */
             }
 
             .dpad {
                 width: 100%;
-                max-width: 90vw;
-                height: 140px;
+                max-width: 95vw;
+                height: 160px; /* Aumentado para botones más grandes */
                 margin: 0 auto;
-                border-radius: 20px;
+                border-radius: 25px;
                 background: rgba(0, 0, 0, 0.4);
                 border: 3px solid rgba(255, 255, 255, 0.6);
+                position: relative;
             }
 
             .dpad-button {
-                width: 70px;
-                height: 70px;
-                font-size: 24px;
-                border-radius: 15px;
+                width: min(18vw, 90px); /* Tamaño dinámico basado en viewport */
+                height: min(18vw, 90px); /* Tamaño dinámico basado en viewport */
+                font-size: min(6vw, 28px); /* Texto dinámico */
+                border-radius: min(4vw, 20px);
                 background: rgba(255, 255, 255, 0.95);
                 border: 4px solid #333;
-                box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+                box-shadow: 0 6px 12px rgba(0,0,0,0.4);
+                min-width: 80px; /* Tamaño mínimo */
+                min-height: 80px;
             }
 
             .dpad-up {
@@ -549,13 +554,13 @@
             }
 
             .dpad-left {
-                left: 15%; /* Más hacia la izquierda */
+                left: 8%; /* Más hacia la izquierda para aprovechar el ancho */
                 top: 50%;
                 transform: translateY(-50%);
             }
 
             .dpad-right {
-                right: 15%; /* Más hacia la derecha */
+                right: 8%; /* Más hacia la derecha para aprovechar el ancho */
                 top: 50%;
                 transform: translateY(-50%);
             }
