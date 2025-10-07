@@ -440,7 +440,7 @@
             right: 10px;
             width: 400px;
             max-height: 600px;
-            background: rgba(0, 0, 0, 0.95);
+            background: rgba(0, 0, 0, 0.9);
             color: #00FF00;
             font-family: 'Courier New', monospace;
             font-size: 12px;
@@ -448,16 +448,12 @@
             border-radius: 8px;
             border: 2px solid #00FF00;
             overflow-y: auto;
-            z-index: 999999;
+            z-index: 10000;
             display: none;
-            box-shadow: 0 0 20px rgba(0, 255, 0, 0.5);
         ">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
                 <h3 style="margin: 0; color: #00FF00;">🔍 XVERSE DEBUG LOG</h3>
-                <div>
-                    <button onclick="closeWalletModal()" style="background: #ff9900; color: white; border: none; padding: 2px 6px; border-radius: 3px; cursor: pointer; margin-right: 5px;">Close Modal</button>
-                    <button onclick="clearXverseLog()" style="background: #ff0000; color: white; border: none; padding: 2px 6px; border-radius: 3px; cursor: pointer;">Clear</button>
-                </div>
+                <button onclick="clearXverseLog()" style="background: #ff0000; color: white; border: none; padding: 2px 6px; border-radius: 3px; cursor: pointer;">Clear</button>
             </div>
             <div id="xverseLogContent"></div>
         </div>
@@ -477,27 +473,16 @@
             }
 
             init() {
-                // Keyboard shortcuts
+                // Toggle debug log with F12 key
                 document.addEventListener('keydown', (e) => {
                     if (e.key === 'F12') {
                         e.preventDefault();
                         this.toggleVisibility();
                     }
-                    // F11 to close stuck modal
-                    if (e.key === 'F11') {
-                        e.preventDefault();
-                        closeWalletModal();
-                    }
-                    // F10 to force show debug log
-                    if (e.key === 'F10') {
-                        e.preventDefault();
-                        this.show();
-                    }
                 });
 
                 // Auto-show on Xverse errors
-                this.log('🔍 XverseDebugLogger initialized.');
-                this.log('⌨️ Shortcuts: F12=Toggle Log | F11=Close Modal | F10=Show Log');
+                this.log('🔍 XverseDebugLogger initialized. Press F12 to toggle visibility.');
                 this.log('📋 Starting Xverse environment analysis...');
                 this.analyzeEnvironment();
             }
@@ -661,58 +646,6 @@
         // Clear log function for button
         function clearXverseLog() {
             xverseLogger.clear();
-        }
-
-        // Close modal function for when wallet selection gets stuck
-        function closeWalletModal() {
-            xverseLogger.log('🔧 Attempting to close stuck wallet modal...');
-            
-            // Try multiple methods to close the modal
-            const modalSelectors = [
-                '.wallet-modal',
-                '.modal',
-                '[data-modal]',
-                '#walletModal',
-                '.wallet-selection',
-                '.overlay',
-                '.popup',
-                '[role="dialog"]'
-            ];
-            
-            let closedCount = 0;
-            modalSelectors.forEach(selector => {
-                const elements = document.querySelectorAll(selector);
-                elements.forEach(element => {
-                    if (element.style.display !== 'none') {
-                        element.style.display = 'none';
-                        closedCount++;
-                        xverseLogger.log(`   ✅ Closed element: ${selector}`);
-                    }
-                });
-            });
-            
-            // Try to remove backdrop/overlay elements
-            const overlays = document.querySelectorAll('[class*="overlay"], [class*="backdrop"], [class*="modal"]');
-            overlays.forEach(overlay => {
-                if (overlay.style.display !== 'none' && overlay.offsetParent !== null) {
-                    overlay.style.display = 'none';
-                    closedCount++;
-                    xverseLogger.log(`   ✅ Closed overlay: ${overlay.className}`);
-                }
-            });
-            
-            // Force enable body scroll
-            document.body.style.overflow = 'auto';
-            document.documentElement.style.overflow = 'auto';
-            
-            // Try to trigger escape key
-            document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', keyCode: 27 }));
-            
-            if (closedCount > 0) {
-                xverseLogger.log(`✅ Closed ${closedCount} modal element(s)`);
-            } else {
-                xverseLogger.log('⚠️ No modal elements found to close', 'warn');
-            }
         }
 
         // Bitcoin Wallet Authentication
@@ -901,10 +834,10 @@
                     
                     // Method 2: Try XverseProviders.BitcoinProvider (legacy but reliable)
                     if (window.XverseProviders?.BitcoinProvider) {
-                        console.log('📢 Using XverseProviders.BitcoinProvider API...');
+                        console.log('📢 Using XverseProviders.BitcoinProvider.connect() API...');
                         
-                        const response = await window.XverseProviders.BitcoinProvider.request('getAddresses');
-                        console.log('📋 XverseProviders response:', response);
+                        const response = await window.XverseProviders.BitcoinProvider.connect();
+                        console.log('📋 XverseProviders.connect() response:', response);
                         
                         if (response && (response.addresses || response.result)) {
                             const addresses = response.addresses || response.result?.addresses || response.result;
@@ -944,7 +877,10 @@
                             console.log(`📢 Trying ${method.name} API...`);
                             
                             try {
-                                const response = await method.provider.request('getAddresses');
+                                // Try connect method first, fallback to request
+                                const response = method.provider.connect ? 
+                                    await method.provider.connect() : 
+                                    await method.provider.request('getAddresses');
                                 console.log(`📋 ${method.name} response:`, response);
                                 
                                 if (response && (response.addresses || response.result)) {
