@@ -494,6 +494,11 @@
 
         /* ADAPTACIONES MÓVILES */
         @media (max-width: 768px) {
+            #gameContainer {
+                height: calc(100vh - 160px); /* Dejar espacio para el D-pad */
+                margin-bottom: 160px; /* Espacio para los controles */
+            }
+
             .mobile-controls {
                 display: block;
                 bottom: 10px;
@@ -501,13 +506,14 @@
                 right: 0;
                 transform: none;
                 width: 100%;
-                height: 120px; /* ~3cm en 6.7" */
+                height: 140px; /* Aumentado para el D-pad más grande */
+                padding: 0 10px;
             }
 
             .dpad {
                 width: 100%;
-                max-width: 300px;
-                height: 120px;
+                max-width: 90vw;
+                height: 140px;
                 margin: 0 auto;
                 border-radius: 20px;
                 background: rgba(0, 0, 0, 0.4);
@@ -515,34 +521,35 @@
             }
 
             .dpad-button {
-                width: 50px;
-                height: 50px;
-                font-size: 20px;
-                border-radius: 12px;
-                background: rgba(255, 255, 255, 0.9);
-                border: 3px solid #333;
+                width: 70px;
+                height: 70px;
+                font-size: 24px;
+                border-radius: 15px;
+                background: rgba(255, 255, 255, 0.95);
+                border: 4px solid #333;
+                box-shadow: 0 4px 8px rgba(0,0,0,0.3);
             }
 
             .dpad-up {
-                top: 10px;
+                top: 15px;
                 left: 50%;
                 transform: translateX(-50%);
             }
 
             .dpad-down {
-                bottom: 10px;
+                bottom: 15px;
                 left: 50%;
                 transform: translateX(-50%);
             }
 
             .dpad-left {
-                left: 20px;
+                left: 25px;
                 top: 50%;
                 transform: translateY(-50%);
             }
 
             .dpad-right {
-                right: 20px;
+                right: 25px;
                 top: 50%;
                 transform: translateY(-50%);
             }
@@ -1628,11 +1635,29 @@
             initAudio() {
                 try {
                     this.audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                    this.setupMobileAudioSupport();
                     this.setupBackgroundMusic();
                     console.log('🔊 Audio system initialized');
                 } catch (e) {
                     console.warn('⚠️ Audio not available:', e);
                 }
+            }
+
+            setupMobileAudioSupport() {
+                // Para móviles, necesitamos activar el audio con interacción del usuario
+                const enableAudio = () => {
+                    if (this.audioContext && this.audioContext.state === 'suspended') {
+                        this.audioContext.resume();
+                        console.log('🔊 Audio context resumed for mobile');
+                    }
+                };
+
+                // Activar audio en cualquier toque/click
+                document.addEventListener('touchstart', enableAudio, { once: true });
+                document.addEventListener('click', enableAudio, { once: true });
+                
+                // También cuando se presiona cualquier tecla
+                document.addEventListener('keydown', enableAudio, { once: true });
             }
 
             async setupBackgroundMusic() {
@@ -1767,7 +1792,14 @@
                     this.stopBackgroundMusic();
                     console.log('🔇 Audio muted');
                 } else {
-                    if (window.game && window.game.isRunning) {
+                    // Asegurar que el audio context esté activo en móviles
+                    if (this.audioContext && this.audioContext.state === 'suspended') {
+                        this.audioContext.resume().then(() => {
+                            if (window.game && window.game.isRunning) {
+                                this.startBackgroundMusic();
+                            }
+                        });
+                    } else if (window.game && window.game.isRunning) {
                         this.startBackgroundMusic();
                     }
                     console.log('🔊 Audio enabled');
